@@ -22,13 +22,6 @@
     "oxlint": "1.78.0"
   },
   "packageManager": "pnpm@11.19.0",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "11.19.0",
-      "onFail": "download"
-    }
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
       "oxlint --fix",
