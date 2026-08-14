@@ -12,7 +12,7 @@
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "web:dev": "pnpm -F web dev"
   },
   "devDependencies": {
