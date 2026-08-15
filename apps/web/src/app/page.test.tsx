@@ -11,11 +11,6 @@ describe('Home', () => {
     ).toBeDefined()
   })
 
-  it('shows the keyboard shortcut hint', () => {
-    render(<Home />)
-    expect(screen.getByText('⌘K')).toBeDefined()
-  })
-
   it('renders the full tool index', () => {
     render(<Home />)
     expect(screen.getAllByRole('link')).toHaveLength(5)

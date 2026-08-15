@@ -233,8 +233,8 @@ export function ToolGrid({ tools }: { tools: Tool[] }) {
 **Creates:** `apps/web/src/app/page.test.tsx`
 **Deletes:** `apps/web/public/*.svg`
 
-**The test that proves it:** the search field, the ⌘K hint and all five tool
-links render from one synchronous Server Component.
+**The test that proves it:** the search field and all five tool links render
+from one synchronous Server Component.
 
 - [x] **4.1** Write the failing test — `page.test.tsx`:
 
@@ -250,11 +250,6 @@ describe('Home', () => {
     expect(
       screen.getByRole('searchbox', { name: /search tools/i })
     ).toBeDefined()
-  })
-
-  it('shows the keyboard shortcut hint', () => {
-    render(<Home />)
-    expect(screen.getByText('⌘K')).toBeDefined()
   })
 
   it('renders the full tool index', () => {
@@ -276,17 +271,12 @@ import { Input } from '@/components/ui/input'
 export default function Home() {
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
-      <div className="relative mb-10">
-        <Input
-          className="h-9 pr-12"
-          type="search"
-          placeholder="Search tools…"
-          aria-label="Search tools"
-        />
-        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center font-mono text-xs text-muted-foreground">
-          ⌘K
-        </span>
-      </div>
+      <Input
+        className="mb-10 h-9"
+        type="search"
+        placeholder="Search tools…"
+        aria-label="Search tools"
+      />
 
       <ToolGrid tools={tools} />
     </main>
@@ -296,7 +286,7 @@ export default function Home() {
 
 No `'use client'` — `ToolGrid` is the only client island.
 
-- [x] **4.4** `pnpm -F web test` → 7 passed across 2 files
+- [x] **4.4** `pnpm -F web test` → 6 passed across 2 files
 
 - [x] **4.5** `rm apps/web/public/*.svg` — create-next-app leftovers
 
