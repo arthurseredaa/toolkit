@@ -28,11 +28,11 @@ Boxes 1.1-1.3 are already committed (`353e7e7`). Resume at 1.4.
       `"style": "base-nova"`, `"baseColor": "neutral"`, `"rsc": true`.
       Wrong? Delete the file and rerun 1.1 with `-f` — these are permanent.
 
-- [ ] **1.4** `cd apps/web && pnpm dlx shadcn@latest add card input -y`
+- [x] **1.4** `cd apps/web && pnpm dlx shadcn@latest add card input -y`
 
-- [ ] **1.5** `ls apps/web/tailwind.config.*` → must not exist.
+- [x] **1.5** `ls apps/web/tailwind.config.*` → must not exist.
 
-- [ ] **1.6** `pnpm fmt` — the CLI writes double quotes and semicolons.
+- [x] **1.6** `pnpm fmt` — the CLI writes double quotes and semicolons.
 
 ---
 
