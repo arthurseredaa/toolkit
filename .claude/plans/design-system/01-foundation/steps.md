@@ -9,6 +9,8 @@ Run everything from the repo root unless a step says otherwise.
 
 ## Task 1 — Initialise shadcn, pull card and input
 
+**Agent:** worker
+
 **Creates:** `apps/web/components.json`, `apps/web/src/lib/utils.ts`,
 `apps/web/src/components/ui/{card,input}.tsx`
 **Rewrites:** `apps/web/src/app/globals.css`
@@ -35,6 +37,8 @@ No unit test — this runs a code generator. The checks below are the proof.
 
 ## Task 2 — Map the mono font
 
+**Agent:** worker
+
 **Modifies:** `apps/web/src/app/globals.css`
 
 No unit test — CSS custom property registration is not observable from jsdom.
@@ -53,6 +57,8 @@ Proven by the build and by eye.
 ---
 
 ## Task 3 — Card gets a border
+
+**Agent:** worker
 
 **Modifies:** `apps/web/src/components/ui/card.tsx`
 
@@ -75,6 +81,8 @@ rounded-xl border bg-card py-(--card-spacing) text-sm text-card-foreground
 ---
 
 ## Task 4 — Dark-only root layout
+
+**Agent:** worker
 
 **Modifies:** `apps/web/src/app/layout.tsx`
 

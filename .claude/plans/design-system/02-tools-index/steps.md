@@ -10,6 +10,8 @@ Not repeated below.
 
 ## Task 1 — Bootstrap Vitest
 
+**Agent:** worker
+
 **Creates:** `apps/web/vitest.config.mts`, `apps/web/vitest.setup.ts`
 **Modifies:** `apps/web/package.json`
 
@@ -74,6 +76,8 @@ beforeEach(() => {
 
 ## Task 2 — Tool data
 
+**Agent:** worker
+
 **Creates:** `apps/web/src/components/dashboard/tools.ts`
 
 No unit test of its own — a static literal with no logic. Its contents are
@@ -101,6 +105,8 @@ export const tools: Tool[] = [
 ---
 
 ## Task 3 — Tool grid (client island)
+
+**Agent:** tdd -> worker
 
 **Creates:** `apps/web/src/components/dashboard/tool-grid.tsx` + `.test.tsx`
 
@@ -221,6 +227,8 @@ export function ToolGrid({ tools }: { tools: Tool[] }) {
 
 ## Task 4 — The page
 
+**Agent:** tdd -> worker
+
 **Modifies:** `apps/web/src/app/page.tsx`
 **Creates:** `apps/web/src/app/page.test.tsx`
 **Deletes:** `apps/web/public/*.svg`
@@ -295,6 +303,8 @@ No `'use client'` — `ToolGrid` is the only client island.
 ---
 
 ## Task 5 — Design-rule audit
+
+**Agent:** worker
 
 - [ ] **5.1** From `apps/web`, each must report nothing:
 
