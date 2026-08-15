@@ -236,7 +236,7 @@ export function ToolGrid({ tools }: { tools: Tool[] }) {
 **The test that proves it:** the search field, the ⌘K hint and all five tool
 links render from one synchronous Server Component.
 
-- [ ] **4.1** Write the failing test — `page.test.tsx`:
+- [x] **4.1** Write the failing test — `page.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react'
@@ -264,9 +264,9 @@ describe('Home', () => {
 })
 ```
 
-- [ ] **4.2** `pnpm -F web test page` → FAIL
+- [x] **4.2** `pnpm -F web test page` → FAIL
 
-- [ ] **4.3** Replace `page.tsx`:
+- [x] **4.3** Replace `page.tsx`:
 
 ```tsx
 import { ToolGrid } from '@/components/dashboard/tool-grid'
@@ -296,9 +296,9 @@ export default function Home() {
 
 No `'use client'` — `ToolGrid` is the only client island.
 
-- [ ] **4.4** `pnpm -F web test` → 7 passed across 2 files
+- [x] **4.4** `pnpm -F web test` → 7 passed across 2 files
 
-- [ ] **4.5** `rm apps/web/public/*.svg` — create-next-app leftovers
+- [x] **4.5** `rm apps/web/public/*.svg` — create-next-app leftovers
 
 ---
 
