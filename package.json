@@ -13,6 +13,7 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "prepare": "husky || true",
+    "run-plan": "node packages/pipeline/src/cli.mjs",
     "web:dev": "pnpm -F web dev"
   },
   "devDependencies": {

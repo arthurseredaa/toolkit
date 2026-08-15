@@ -13,7 +13,10 @@ function parseArgs(argv) {
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
-    if (a === '--dry-run') opts.dryRun = true
+    // `pnpm run-plan -- <feature>` is an npm habit; pnpm forwards the `--`
+    // verbatim, so swallow it instead of reading it as the feature name.
+    if (a === '--') continue
+    else if (a === '--dry-run') opts.dryRun = true
     else if (a === '--pr') opts.pr = true
     else if (a === '--max-rounds') opts.maxRounds = Number(argv[++i])
     else if (a === '--limit') opts.limit = Number(argv[++i])
