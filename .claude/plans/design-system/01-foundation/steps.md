@@ -77,7 +77,7 @@ Proven by the build and by eye.
 
 No unit test — one class substitution with no behavioural surface.
 
-- [ ] **3.1** In the `Card` function only, replace
+- [x] **3.1** In the `Card` function only, replace
 
 ```
 rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10
@@ -89,7 +89,7 @@ with
 rounded-xl border bg-card py-(--card-spacing) text-sm text-card-foreground
 ```
 
-- [ ] **3.2** `grep -c 'ring-foreground/10' apps/web/src/components/ui/card.tsx` → 0
+- [x] **3.2** `grep -c 'ring-foreground/10' apps/web/src/components/ui/card.tsx` → 0
 
 ---
 
