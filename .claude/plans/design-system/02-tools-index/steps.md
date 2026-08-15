@@ -306,7 +306,7 @@ No `'use client'` — `ToolGrid` is the only client island.
 
 **Agent:** worker
 
-- [ ] **5.1** From `apps/web`, each must report nothing:
+- [x] **5.1** From `apps/web`, each must report nothing:
 
 ```bash
 grep -rnE 'shadow-|font-semibold|font-bold' src/app src/components/dashboard
@@ -316,7 +316,7 @@ grep -rnE '\[[0-9.]+(px|rem|em)\]|\[#[0-9a-fA-F]{3,8}\]' src/app src/components/
 `src/components/ui/` is excluded on purpose — generated code, and `input.tsx`
 legitimately uses bracket syntax.
 
-- [ ] **5.2** From the repo root:
+- [x] **5.2** From the repo root:
 
 ```bash
 grep -rn framer-motion --include='*.ts' --include='*.tsx' --include='*.json' apps packages package.json
@@ -324,4 +324,4 @@ find . -name package-lock.json -not -path './node_modules/*'
 ls apps/web/tailwind.config.*
 ```
 
-- [ ] **5.3** Run the Verification table in `./plan.md`, including the browser checks.
+- [x] **5.3** Run the Verification table in `./plan.md`, including the browser checks.
