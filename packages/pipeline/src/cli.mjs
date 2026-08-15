@@ -60,7 +60,7 @@ function taskPrompt(chunk, task, extra) {
     .join('\n')
 }
 
-async function runTask({ root, chunk, task, agents, opts, gates }) {
+async function runTask({ root, chunk, task, agents, opts }) {
   let tddReport = null
 
   if (task.agents.includes('tdd')) {
@@ -91,8 +91,8 @@ async function runTask({ root, chunk, task, agents, opts, gates }) {
     const extra = [
       tddReport && `The tdd agent reported:\n\n${tddReport}`,
       gateRun &&
-        `The previous attempt failed these gates:\n\n${gateRun.results
-          .filter((r) => r.status === 'failed')
+        `The previous attempt did not clear these gates:\n\n${gateRun.results
+          .filter((r) => r.status === 'failed' || r.status === 'skipped')
           .map((r) => `$ ${r.cmd}\n${r.out}`)
           .join('\n\n')}`,
       hint
@@ -110,7 +110,13 @@ async function runTask({ root, chunk, task, agents, opts, gates }) {
     log(`\n   ${green.subtype ?? 'dry-run'} · ${green.turns} turns`)
 
     step(`task ${task.number} · gates`)
-    gateRun = runGates(gates, { cwd: root, dryRun: opts.dryRun })
+    // Re-resolved every round on purpose: a task may add the very script a
+    // gate runs (chunk 02 task 1 adds `test`). Resolving once at startup
+    // would freeze that gate as 'skipped' for the whole process.
+    gateRun = runGates(resolveGates(root), {
+      cwd: root,
+      dryRun: opts.dryRun
+    })
     for (const r of gateRun.results) log(`   ${r.status.padEnd(8)} ${r.cmd}`)
 
     // The loop knows how to repeat; policy.mjs knows when to. Everything below
@@ -208,7 +214,7 @@ async function main() {
         return
       }
 
-      const r = await runTask({ root, chunk, task, agents, opts, gates })
+      const r = await runTask({ root, chunk, task, agents, opts })
       executed++
 
       if (!r.ok) {
