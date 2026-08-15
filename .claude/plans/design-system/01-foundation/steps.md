@@ -102,7 +102,7 @@ rounded-xl border bg-card py-(--card-spacing) text-sm text-card-foreground
 No unit test — fonts, metadata and viewport are Next runtime chrome with no
 rendered behaviour RTL can assert. Proven by the build.
 
-- [ ] **4.1** Replace the file:
+- [x] **4.1** Replace the file:
 
 ```tsx
 import type { Metadata, Viewport } from 'next'
@@ -137,7 +137,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 `LayoutProps<'/'>` is a Next 16 generated type — keep it, do not hand-write
 `{ children: React.ReactNode }`.
 
-- [ ] **4.2** `pnpm -F web typecheck`
+- [x] **4.2** `pnpm -F web typecheck`
 
 ---
 
