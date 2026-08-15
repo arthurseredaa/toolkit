@@ -45,7 +45,7 @@ Boxes 1.1-1.3 are already committed (`353e7e7`). Resume at 1.4.
 No unit test — CSS custom property registration is not observable from jsdom.
 Proven by the build and by eye.
 
-- [ ] **2.1** In the `@theme inline` block, the nova preset already emits a
+- [x] **2.1** In the `@theme inline` block, the nova preset already emits a
       `--font-mono` line. shadcn 4.18.0 changed this; this plan was written
       against 4.17.0, which emitted none. **Replace** the existing line:
 
@@ -63,7 +63,7 @@ Proven by the build and by eye.
       to `--font-mono`, so any surviving `var(--font-geist-mono)` points the
       token at a variable nothing defines and mono falls back silently.
 
-- [ ] **2.2** `git diff --stat apps/web/src/app/globals.css`
+- [x] **2.2** `git diff --stat apps/web/src/app/globals.css`
       → `1 file changed, 1 insertion(+), 1 deletion(-)`. Anything else means a
       token value moved; revert.
 
