@@ -1,4 +1,5 @@
-import { beforeEach } from 'vitest'
+import { cleanup } from '@testing-library/react'
+import { afterEach, beforeEach } from 'vitest'
 
 export function setMatchMedia(prefersReducedMotion: boolean) {
   Object.defineProperty(window, 'matchMedia', {
@@ -21,4 +22,8 @@ export function setMatchMedia(prefersReducedMotion: boolean) {
 
 beforeEach(() => {
   setMatchMedia(false)
+})
+
+afterEach(() => {
+  cleanup()
 })

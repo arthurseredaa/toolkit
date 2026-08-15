@@ -113,7 +113,7 @@ export const tools: Tool[] = [
 **The test that proves it:** all five tools render as links to their own routes,
 and the grid still renders when reduced motion is preferred.
 
-- [ ] **3.1** Write the failing test — `tool-grid.test.tsx`:
+- [x] **3.1** Write the failing test — `tool-grid.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react'
@@ -154,11 +154,11 @@ describe('ToolGrid', () => {
 })
 ```
 
-- [ ] **3.2** `pnpm -F web test tool-grid` → FAIL, cannot resolve `./tool-grid`
+- [x] **3.2** `pnpm -F web test tool-grid` → FAIL, cannot resolve `./tool-grid`
 
-- [ ] **3.3** `pnpm -F web add motion` — the package is `motion`, never `framer-motion`
+- [x] **3.3** `pnpm -F web add motion` — the package is `motion`, never `framer-motion`
 
-- [ ] **3.4** `tool-grid.tsx`:
+- [x] **3.4** `tool-grid.tsx`:
 
 ```tsx
 'use client'
@@ -221,7 +221,7 @@ export function ToolGrid({ tools }: { tools: Tool[] }) {
 }
 ```
 
-- [ ] **3.5** `pnpm -F web test tool-grid` → 4 passed
+- [x] **3.5** `pnpm -F web test tool-grid` → 4 passed
 
 ---
 
