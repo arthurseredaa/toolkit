@@ -83,7 +83,7 @@ beforeEach(() => {
 No unit test of its own — a static literal with no logic. Its contents are
 asserted by Task 3, where a typo would actually fail.
 
-- [ ] **2.1**
+- [x] **2.1**
 
 ```ts
 export type Tool = {
