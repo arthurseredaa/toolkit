@@ -18,7 +18,7 @@ the tools index is the next chunk.
 | Preset | **nova** | the only preset pairing Lucide with Geist, which the repo already loads |
 | Base colour | **neutral** | ★ stone is unreachable — all 8 presets emit `neutral`, zero chroma. `Custom` opens a web builder and is not scriptable |
 | Components pulled | **`card`, `input`** | everything else lost its call site as scope was cut. Each is one `shadcn add` away |
-| `globals.css` | as generated, **plus one line** | `--font-mono: var(--font-mono)` in `@theme inline`; nova emits sans and heading mappings but no mono |
+| `globals.css` | as generated, **plus one edit** | `@theme inline` gets `--font-mono: var(--font-mono)`. ★ On 4.18.0 nova emits that line already, pointed at `--font-geist-mono` — repoint it, do not duplicate it (4.17.0 emitted no mono line at all) |
 | Fonts | Geist + Geist Mono, variables renamed to `--font-sans` / `--font-mono` | shadcn's `@theme inline` looks for those names, not `--font-geist-*` |
 | Card edge | `ring-1 ring-foreground/10` → `border` | puts cards on the same `--border` token as `input`, so one hairline treatment covers the UI |
 | Dark mode | `className="dark"` on `<html>` + `viewport.colorScheme` | `globals.css` stays byte-identical to generated; adding a toggle later is one line plus `next-themes` |

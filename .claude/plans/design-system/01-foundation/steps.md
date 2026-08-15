@@ -16,14 +16,15 @@ Run everything from the repo root unless a step says otherwise.
 **Rewrites:** `apps/web/src/app/globals.css`
 
 No unit test — this runs a code generator. The checks below are the proof.
+Boxes 1.1-1.3 are already committed (`353e7e7`). Resume at 1.4.
 
-- [ ] **1.1** `cd apps/web && pnpm dlx shadcn@latest init -b base -p nova -y`
+- [x] **1.1** `cd apps/web && pnpm dlx shadcn@latest init -b base -p nova -y`
 
-- [ ] **1.2** Confirm it used pnpm: `git status` shows a large `pnpm-lock.yaml`
+- [x] **1.2** Confirm it used pnpm: `git status` shows a large `pnpm-lock.yaml`
       diff at the repo root and **no** `package-lock.json`. Detection relies on
       the root `pnpm-lock.yaml` plus the `packageManager` field — both present.
 
-- [ ] **1.3** Read `apps/web/components.json`. Required values:
+- [x] **1.3** Read `apps/web/components.json`. Required values:
       `"style": "base-nova"`, `"baseColor": "neutral"`, `"rsc": true`.
       Wrong? Delete the file and rerun 1.1 with `-f` — these are permanent.
 
@@ -44,15 +45,27 @@ No unit test — this runs a code generator. The checks below are the proof.
 No unit test — CSS custom property registration is not observable from jsdom.
 Proven by the build and by eye.
 
-- [ ] **2.1** In the `@theme inline` block, directly under the two existing font
-      lines, add:
+- [ ] **2.1** In the `@theme inline` block, the nova preset already emits a
+      `--font-mono` line. shadcn 4.18.0 changed this; this plan was written
+      against 4.17.0, which emitted none. **Replace** the existing line:
+
+```css
+    --font-mono: var(--font-geist-mono);
+```
+
+      with:
 
 ```css
     --font-mono: var(--font-mono);
 ```
 
+      Do not add a second declaration. Task 4 renames the layout font variable
+      to `--font-mono`, so any surviving `var(--font-geist-mono)` points the
+      token at a variable nothing defines and mono falls back silently.
+
 - [ ] **2.2** `git diff --stat apps/web/src/app/globals.css`
-      → `1 file changed, 1 insertion(+)`. Any deletion means a token value moved; revert.
+      → `1 file changed, 1 insertion(+), 1 deletion(-)`. Anything else means a
+      token value moved; revert.
 
 ---
 
