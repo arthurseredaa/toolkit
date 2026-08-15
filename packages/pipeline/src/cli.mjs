@@ -6,9 +6,16 @@ import { loadAgentDefinition, runAgent } from './agent.mjs'
 import { resolveGates, runGates, sh } from './gates.mjs'
 import { assertBranch, commitTask, createPr } from './git.mjs'
 import { firstPending, loadPlan, tickTask } from './plan.mjs'
+import { decideNext } from './policy.mjs'
 
 function parseArgs(argv) {
-  const opts = { dryRun: false, maxRounds: 3, pr: false, limit: Infinity }
+  const opts = {
+    dryRun: false,
+    maxRounds: 3,
+    pr: false,
+    limit: Infinity,
+    allowMain: false
+  }
   const rest = []
 
   for (let i = 0; i < argv.length; i++) {
@@ -18,6 +25,7 @@ function parseArgs(argv) {
     if (a === '--') continue
     else if (a === '--dry-run') opts.dryRun = true
     else if (a === '--pr') opts.pr = true
+    else if (a === '--allow-main') opts.allowMain = true
     else if (a === '--max-rounds') opts.maxRounds = Number(argv[++i])
     else if (a === '--limit') opts.limit = Number(argv[++i])
     else if (a === '--chunk') opts.chunk = argv[++i]
@@ -75,6 +83,7 @@ async function runTask({ root, chunk, task, agents, opts, gates }) {
   }
 
   let gateRun = null
+  let hint = null
 
   for (let round = 1; round <= opts.maxRounds; round++) {
     step(`task ${task.number} · worker · round ${round}/${opts.maxRounds}`)
@@ -85,7 +94,8 @@ async function runTask({ root, chunk, task, agents, opts, gates }) {
         `The previous attempt failed these gates:\n\n${gateRun.results
           .filter((r) => r.status === 'failed')
           .map((r) => `$ ${r.cmd}\n${r.out}`)
-          .join('\n\n')}`
+          .join('\n\n')}`,
+      hint
     ]
       .filter(Boolean)
       .join('\n\n')
@@ -103,10 +113,34 @@ async function runTask({ root, chunk, task, agents, opts, gates }) {
     gateRun = runGates(gates, { cwd: root, dryRun: opts.dryRun })
     for (const r of gateRun.results) log(`   ${r.status.padEnd(8)} ${r.cmd}`)
 
-    if (gateRun.ok) return { ok: true, rounds: round }
+    // The loop knows how to repeat; policy.mjs knows when to. Everything below
+    // is mechanism reacting to a decision it does not make.
+    const next = decideNext({
+      gateRun,
+      round,
+      maxRounds: opts.maxRounds,
+      task
+    })
+
+    if (!next?.action)
+      throw new Error(
+        'decideNext returned nothing — implement packages/pipeline/src/policy.mjs'
+      )
+
+    log(`   policy   ${next.action}${next.reason ? ` — ${next.reason}` : ''}`)
+
+    if (next.action === 'accept') return { ok: true, rounds: round }
+    if (next.action === 'stop')
+      return { ok: false, stage: 'policy', detail: next.reason }
+
+    hint = next.hint
   }
 
-  return { ok: false, stage: 'gates', detail: gateRun }
+  return {
+    ok: false,
+    stage: 'policy',
+    detail: `retried ${opts.maxRounds} rounds without accept or stop`
+  }
 }
 
 async function main() {
@@ -127,7 +161,8 @@ async function main() {
   log(`plan    ${planDir}`)
   log(`mode    ${opts.dryRun ? 'DRY RUN (no model calls, no writes)' : 'live'}`)
 
-  if (!opts.dryRun) log(`branch  ${assertBranch(root)}`)
+  if (!opts.dryRun)
+    log(`branch  ${assertBranch(root, { allowMain: opts.allowMain })}`)
 
   const plan = loadPlan(planDir)
   const agents = {

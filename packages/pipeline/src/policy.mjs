@@ -33,4 +33,13 @@
 // oxlint-disable-next-line no-unused-vars -- params are used once implemented
 export function decideNext({ gateRun, round, maxRounds, task }) {
   // TODO(human): implement the policy described above.
+  if (round === maxRounds) {
+    return { action: 'stop', reason: 'max rounds reached' }
+  }
+
+  if (gateRun.failed) {
+    return { action: 'stop', reason: 'gate run failed' }
+  }
+
+  return { action: 'accept' }
 }
