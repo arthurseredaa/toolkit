@@ -16,22 +16,23 @@ Run everything from the repo root unless a step says otherwise.
 **Rewrites:** `apps/web/src/app/globals.css`
 
 No unit test — this runs a code generator. The checks below are the proof.
+Boxes 1.1-1.3 are already committed (`353e7e7`). Resume at 1.4.
 
-- [ ] **1.1** `cd apps/web && pnpm dlx shadcn@latest init -b base -p nova -y`
+- [x] **1.1** `cd apps/web && pnpm dlx shadcn@latest init -b base -p nova -y`
 
-- [ ] **1.2** Confirm it used pnpm: `git status` shows a large `pnpm-lock.yaml`
+- [x] **1.2** Confirm it used pnpm: `git status` shows a large `pnpm-lock.yaml`
       diff at the repo root and **no** `package-lock.json`. Detection relies on
       the root `pnpm-lock.yaml` plus the `packageManager` field — both present.
 
-- [ ] **1.3** Read `apps/web/components.json`. Required values:
+- [x] **1.3** Read `apps/web/components.json`. Required values:
       `"style": "base-nova"`, `"baseColor": "neutral"`, `"rsc": true`.
       Wrong? Delete the file and rerun 1.1 with `-f` — these are permanent.
 
-- [ ] **1.4** `cd apps/web && pnpm dlx shadcn@latest add card input -y`
+- [x] **1.4** `cd apps/web && pnpm dlx shadcn@latest add card input -y`
 
-- [ ] **1.5** `ls apps/web/tailwind.config.*` → must not exist.
+- [x] **1.5** `ls apps/web/tailwind.config.*` → must not exist.
 
-- [ ] **1.6** `pnpm fmt` — the CLI writes double quotes and semicolons.
+- [x] **1.6** `pnpm fmt` — the CLI writes double quotes and semicolons.
 
 ---
 
@@ -44,15 +45,27 @@ No unit test — this runs a code generator. The checks below are the proof.
 No unit test — CSS custom property registration is not observable from jsdom.
 Proven by the build and by eye.
 
-- [ ] **2.1** In the `@theme inline` block, directly under the two existing font
-      lines, add:
+- [x] **2.1** In the `@theme inline` block, the nova preset already emits a
+      `--font-mono` line. shadcn 4.18.0 changed this; this plan was written
+      against 4.17.0, which emitted none. **Replace** the existing line:
+
+```css
+    --font-mono: var(--font-geist-mono);
+```
+
+      with:
 
 ```css
     --font-mono: var(--font-mono);
 ```
 
-- [ ] **2.2** `git diff --stat apps/web/src/app/globals.css`
-      → `1 file changed, 1 insertion(+)`. Any deletion means a token value moved; revert.
+      Do not add a second declaration. Task 4 renames the layout font variable
+      to `--font-mono`, so any surviving `var(--font-geist-mono)` points the
+      token at a variable nothing defines and mono falls back silently.
+
+- [x] **2.2** `git diff --stat apps/web/src/app/globals.css`
+      → `1 file changed, 1 insertion(+), 1 deletion(-)`. Anything else means a
+      token value moved; revert.
 
 ---
 
@@ -64,7 +77,7 @@ Proven by the build and by eye.
 
 No unit test — one class substitution with no behavioural surface.
 
-- [ ] **3.1** In the `Card` function only, replace
+- [x] **3.1** In the `Card` function only, replace
 
 ```
 rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10
@@ -76,7 +89,7 @@ with
 rounded-xl border bg-card py-(--card-spacing) text-sm text-card-foreground
 ```
 
-- [ ] **3.2** `grep -c 'ring-foreground/10' apps/web/src/components/ui/card.tsx` → 0
+- [x] **3.2** `grep -c 'ring-foreground/10' apps/web/src/components/ui/card.tsx` → 0
 
 ---
 
@@ -89,7 +102,7 @@ rounded-xl border bg-card py-(--card-spacing) text-sm text-card-foreground
 No unit test — fonts, metadata and viewport are Next runtime chrome with no
 rendered behaviour RTL can assert. Proven by the build.
 
-- [ ] **4.1** Replace the file:
+- [x] **4.1** Replace the file:
 
 ```tsx
 import type { Metadata, Viewport } from 'next'
@@ -124,7 +137,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 `LayoutProps<'/'>` is a Next 16 generated type — keep it, do not hand-write
 `{ children: React.ReactNode }`.
 
-- [ ] **4.2** `pnpm -F web typecheck`
+- [x] **4.2** `pnpm -F web typecheck`
 
 ---
 

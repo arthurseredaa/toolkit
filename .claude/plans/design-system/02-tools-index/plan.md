@@ -20,7 +20,7 @@ stagger on the grid. Depends on `../01-foundation/`, which must land first.
 | Recent activity list | **dropped** | `separator` lost its last call site with it |
 | Placeholder card | **dropped** | new tools arrive in code, so a "New tool" affordance is fiction |
 | Icons on cards | **none** | `lucide-react` ships as a shadcn dependency but is intentionally unused |
-| ⌘K hint | non-functional mono span, no tooltip | nothing should explain a shortcut that does nothing |
+| ⌘K hint | **not rendered** | an affordance that does nothing is worse than none — it shipped inert and every gate stayed green |
 | Motion | mount stagger only — fade + 12px rise, 180ms, 25ms stagger, ease-out | wrapped in `useReducedMotion()`. Hover is a border-colour transition and nothing else |
 | Tests | **Vitest 4.1.10 + React Testing Library** | config from the bundled Next guide. The `vitest` skill in `.agents/skills/` documents 5.x beta — its only breaking changes (`workspace`→`projects`, `deps.optimizer.*`) are ones we do not use |
 | Design-rule enforcement | **one-time manual grep**, no script | a "zero arbitrary values" regex cannot separate `text-[13px]` from `data-[side=top]` without guesswork |
@@ -61,7 +61,7 @@ stagger on the grid. Depends on `../01-foundation/`, which must land first.
 
 | Command | Green looks like |
 |---|---|
-| `pnpm -F web test` | `Test Files 2 passed`, `Tests 7 passed` |
+| `pnpm -F web test` | `Test Files 2 passed`, `Tests 6 passed` |
 | `pnpm -F web typecheck` | no output, exit 0 |
 | `pnpm lint` | `Found 0 warnings and 0 errors` |
 | `pnpm -F web build` | `✓ Compiled successfully`, `/` listed as a static route |

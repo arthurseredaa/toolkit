@@ -64,7 +64,31 @@ Before any step enters the plan, stop at the first rung that applies:
 Reading existing code beats writing new code. A step that survives the ladder
 is a step worth planning.
 
-## 5. The gate
+## 5. The affordance rule
+
+Anything that *looks* usable must say what happens when someone uses it — a key
+hint, a button, a clickable-looking icon, a search placeholder, an empty-state
+call to action.
+
+Every one gets a row in **Decisions settled**, and that row has exactly two
+legal answers:
+
+| Answer | What it obliges |
+|---|---|
+| It works | a step in `steps.md`, and a test that **presses** it — not one that renders it |
+| It is not shipped | do not render it |
+
+★ **"It renders but does nothing" is not a legal answer.** No gate catches it.
+`test`, `typecheck` and `lint` all verify conformance to the plan, so a plan
+that asks for a dead control yields a test asserting the dead control renders,
+and it passes. The class is invisible to them by construction.
+
+`.claude/plans/design-system/02-tools-index/plan.md:23` settled a ⌘K hint as a
+"non-functional mono span", reasoning that *nothing should explain a shortcut
+that does nothing* — then kept the shortcut and dropped only the tooltip. Every
+gate went green and the dead key reached the browser.
+
+## 6. The gate
 
 **Do not write the plan file until the user confirms shared understanding.**
 
@@ -76,7 +100,7 @@ and "that all sounds right" are not confirmation.
 Reading, searching, and read-only commands are always fine during the
 interview. Prefer them.
 
-## 6. Two files, two readers
+## 7. Two files, two readers
 
 **Never put both audiences in one file.** They want opposite things, and the
 executor's material always wins on volume — a single file ends up ~90% code the
@@ -119,7 +143,7 @@ overwriting or inventing a new name.
 
 | Gate | Rule |
 |---|---|
-| 1 | No plan file at all until the interview is confirmed (see §5). |
+| 1 | No plan file at all until the interview is confirmed (see §6). |
 | 2 | **No `steps.md` until the user has read and approved `plan.md`.** |
 
 Gate 2 exists because the verbose file is the expensive one. Writing it before
@@ -159,7 +183,7 @@ assert, say so on that line and explain why.
 Those live in `plan.md`, once. Two copies drift; when they disagree, `plan.md`
 wins. Open the file with one line back: `Decisions: ./plan.md`.
 
-## 7. Cutting rules
+## 8. Cutting rules
 
 Both files. Every one of these came from a plan that was rejected as unreadable.
 
@@ -176,9 +200,9 @@ Both files. Every one of these came from a plan that was rejected as unreadable.
 - **No expected-output block when failure is self-evident.** Include it only
   where the reader could mistake a failure for success.
 - **Check the budget before handing over:** `wc -l` the decision file. Over 80,
-  split the chunk (§6) — do not cut content to fit.
+  split the chunk (§7) — do not cut content to fit.
 
-## 8. Readability rules
+## 9. Readability rules
 
 The decision file is read by a human choosing whether to approve. Optimize hard
 for that. The steps file follows the same rules wherever they do not fight
@@ -208,6 +232,7 @@ These mean stop:
 | "I'll just ask whether they use vitest" | That is a fact. Go look. |
 | "I remember how this Next API works" | Read `node_modules/next/dist/docs/`. |
 | "Batching questions saves them time" | Follow grilling's pacing, not your own. |
+| "It's only a visual hint, nobody will actually press it" | Then it must not look pressable. No gate catches this one. |
 | "They said go, so the gate is lifted" | Delegation under pressure is not agreement. |
 | "One file is simpler than two" | Simpler to write, unreadable to approve. The code drowns the decisions. |
 | "This snippet makes the decision clearer" | Then the decision file has code in it. Name the file and line instead. |

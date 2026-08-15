@@ -10,14 +10,16 @@ export function isDirty(cwd) {
   return sh('git status --porcelain', { cwd }).out.length > 0
 }
 
-// The pipeline commits per task, so it must never run on the default branch.
-// Creating the branch is left to the engineer on purpose.
-export function assertBranch(cwd) {
+// The pipeline commits per task, so by default it refuses the default branch.
+// Creating the branch is left to the engineer on purpose. `--allow-main` opts
+// out, for repos that deliberately commit straight to main.
+export function assertBranch(cwd, { allowMain = false } = {}) {
   const branch = currentBranch(cwd)
-  if (DEFAULT_BRANCHES.has(branch))
+  if (!allowMain && DEFAULT_BRANCHES.has(branch))
     throw new Error(
       `refusing to run on '${branch}'. Create a branch first:\n` +
-        `  git checkout -b feat/<name>`
+        `  git checkout -b feat/<name>\n` +
+        `or pass --allow-main to commit here on purpose.`
     )
   return branch
 }

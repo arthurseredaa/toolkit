@@ -22,11 +22,11 @@
     "oxfmt": "0.63.0",
     "oxlint": "1.78.0"
   },
-  "packageManager": "pnpm@11.19.0",
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
       "oxlint --fix",
       "oxfmt"
     ]
-  }
+  },
+  "packageManager": "pnpm@11.19.0"
 }
