@@ -22,7 +22,7 @@ Setup taken from `apps/web/node_modules/next/dist/docs/01-app/02-guides/testing/
       `@testing-library/dom@10.4.1`, `vite-tsconfig-paths@6.1.1`. Only the config
       files below remain.
 
-- [ ] **1.2** `apps/web/vitest.config.mts`:
+- [x] **1.2** `apps/web/vitest.config.mts`:
 
 ```ts
 import react from '@vitejs/plugin-react'
@@ -38,7 +38,7 @@ export default defineConfig({
 })
 ```
 
-- [ ] **1.3** `apps/web/vitest.setup.ts`:
+- [x] **1.3** `apps/web/vitest.setup.ts`:
 
 ```ts
 import { beforeEach } from 'vitest'
@@ -67,10 +67,10 @@ beforeEach(() => {
 })
 ```
 
-- [ ] **1.4** Add to `apps/web/package.json` scripts:
+- [x] **1.4** Add to `apps/web/package.json` scripts:
       `"test": "vitest run"`, `"test:watch": "vitest"`
 
-- [ ] **1.5** `pnpm -F web test` → starts, reports no test files.
+- [x] **1.5** `pnpm -F web test` → starts, reports no test files.
 
 ---
 
