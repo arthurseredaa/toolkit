@@ -405,7 +405,7 @@ or MIME) are dropped and counted; in Safari they pass; non-image files are
 always dropped; the Safari detector says no to Chrome-on-Mac and yes to iOS
 Safari.
 
-- [ ] **5.1** Write the failing test — `input.test.ts`:
+- [x] **5.1** Write the failing test — `input.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest'
@@ -466,9 +466,9 @@ describe('ACCEPT', () => {
 })
 ```
 
-- [ ] **5.2** `pnpm -F web test input` → FAIL, cannot resolve `./input`
+- [x] **5.2** `pnpm -F web test input` → FAIL, cannot resolve `./input`
 
-- [ ] **5.3** `input.ts`:
+- [x] **5.3** `input.ts`:
 
 ```ts
 const HEIC_RE = /\.hei[cf]$/i
@@ -508,7 +508,7 @@ export function filterFiles(
 }
 ```
 
-- [ ] **5.4** `pnpm -F web test input` → 6 passed
+- [x] **5.4** `pnpm -F web test input` → 6 passed
 
 ---
 
