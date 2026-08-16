@@ -1113,7 +1113,7 @@ the on-device rows of the Verification table in `./plan.md`; the policy these
 files call (`planOutput`, `pickSmaller`, `insertExif`, `createPool`) is already
 tested. Type-check is the gate for this task.
 
-- [ ] **9.1** `encode.ts` — the swappable encoder. Anything that replaces the
+- [x] **9.1** `encode.ts` — the swappable encoder. Anything that replaces the
       native codec later replaces this file only:
 
 ```ts
@@ -1177,7 +1177,7 @@ export async function canEncodeWebp(): Promise<boolean> {
 }
 ```
 
-- [ ] **9.2** `worker.ts` — one request in, one reply out. `File` in and `Blob`
+- [x] **9.2** `worker.ts` — one request in, one reply out. `File` in and `Blob`
       out are cloned by reference by the structured clone algorithm; nothing
       here needs a transfer list. Never post an `ImageBitmap` or a raw buffer:
 
@@ -1237,7 +1237,7 @@ self.onmessage = async (ev: MessageEvent<CompressRequest>) => {
 }
 ```
 
-- [ ] **9.3** `client.ts` — the only place a real `Worker` is constructed.
+- [x] **9.3** `client.ts` — the only place a real `Worker` is constructed.
       Turbopack bundles `new Worker(new URL('./worker.ts', import.meta.url))`
       as a separate entry; the `type: 'module'` option is required because
       `worker.ts` uses `import`:
@@ -1269,7 +1269,7 @@ export const compressInBrowser: Compress = (file, quality) => {
 }
 ```
 
-- [ ] **9.4** `pnpm -F web typecheck` → clean. `pnpm lint` → clean.
+- [x] **9.4** `pnpm -F web typecheck` → clean. `pnpm lint` → clean.
 
 ---
 
