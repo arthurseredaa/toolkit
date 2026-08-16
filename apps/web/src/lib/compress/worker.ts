@@ -13,12 +13,14 @@ import type { CompressRequest, CompressResult, WorkerReply } from './types'
 
 async function compress({
   file,
-  quality
+  quality,
+  flatten
 }: CompressRequest): Promise<CompressResult> {
   const canvas = draw(await decode(file))
   try {
     const webp = await canEncodeWebp()
     const alpha =
+      !flatten &&
       (file.type === 'image/png' || file.type === 'image/webp') &&
       hasAlpha(canvas)
     const type = planOutput({
@@ -47,7 +49,8 @@ async function compress({
       name: kept ? file.name : outputName(file.name, file.type, type),
       type: kept ? file.type : type,
       kept,
-      originalSize: file.size
+      originalSize: file.size,
+      transparent: alpha && type === 'image/png'
     }
   } finally {
     release(canvas)

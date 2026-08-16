@@ -2130,7 +2130,7 @@ find . -name package-lock.json -not -path '*/node_modules/*'
 it calls `compress` again with `{ flatten: true }` and, once resolved, the row
 shows the JPEG result and the button is gone.
 
-- [ ] **15.1** Write the failing test — append to `compressor.test.tsx`. First
+- [x] **15.1** Write the failing test — append to `compressor.test.tsx`. First
       widen the fake so it records the third argument:
 
 ```tsx
@@ -2187,11 +2187,11 @@ Then the test, inside `describe('Compressor')`:
   })
 ```
 
-- [ ] **15.2** `pnpm -F web test compressor` → FAIL on `getByText('1000 B · kept — transparent PNG')`
+- [x] **15.2** `pnpm -F web test compressor` → FAIL on `getByText('1000 B · kept — transparent PNG')`
       (typecheck will also complain about `transparent` and the third argument —
       that is expected until 15.3).
 
-- [ ] **15.3** `types.ts` — three additive changes:
+- [x] **15.3** `types.ts` — three additive changes:
 
 ```ts
 export type CompressResult = {
@@ -2221,7 +2221,7 @@ export type Job = {
 export type CompressRequest = { file: File; quality: number; flatten?: boolean }
 ```
 
-- [ ] **15.4** `client.ts` — the third argument travels to the worker:
+- [x] **15.4** `client.ts` — the third argument travels to the worker:
 
 ```ts
 export type Compress = (
@@ -2243,7 +2243,7 @@ export function createCompressor(): Compress {
 
 and `compressInBrowser` forwards `opts` the same way.
 
-- [ ] **15.5** `worker.ts` — `compress` destructures `flatten` and:
+- [x] **15.5** `worker.ts` — `compress` destructures `flatten` and:
 
 ```ts
     const alpha =
@@ -2256,7 +2256,7 @@ and the returned result gains `transparent: alpha && type === 'image/png'`.
 Nothing else changes: `planOutput` already maps `hasAlpha: false` to JPEG,
 and `convertToBlob` composites transparent pixels onto black for JPEG.
 
-- [ ] **15.6** `compressor.tsx`:
+- [x] **15.6** `compressor.tsx`:
 
   - `run(job, preset, flatten = job.flatten)` and the call becomes
     `compress(job.file, PRESETS[preset].quality, { flatten })`.
@@ -2292,4 +2292,4 @@ and `convertToBlob` composites transparent pixels onto black for JPEG.
     return `${formatBytes(originalSize)} · kept — transparent PNG`
 ```
 
-- [ ] **15.7** `pnpm -F web test compressor` → 10 passed; `pnpm -F web typecheck` clean.
+- [x] **15.7** `pnpm -F web test compressor` → 10 passed; `pnpm -F web typecheck` clean.

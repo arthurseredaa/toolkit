@@ -42,11 +42,11 @@ export function Compressor({
   const [openId, setOpenId] = useState<string | null>(null)
   const runs = useRef(new Map<string, number>())
 
-  function run(job: Job, preset: PresetName) {
+  function run(job: Job, preset: PresetName, flatten = job.flatten) {
     const token = (runs.current.get(job.id) ?? 0) + 1
     runs.current.set(job.id, token)
     store.update(job.id, { status: 'working', error: undefined })
-    compress(job.file, PRESETS[preset].quality).then(
+    compress(job.file, PRESETS[preset].quality, { flatten }).then(
       (result) => {
         if (runs.current.get(job.id) === token)
           store.update(job.id, { status: 'done', result })
@@ -79,6 +79,11 @@ export function Compressor({
   function overridePreset(job: Job, preset: PresetName) {
     store.update(job.id, { preset })
     run(job, preset)
+  }
+
+  function flattenJob(job: Job) {
+    store.update(job.id, { flatten: true })
+    run(job, job.preset ?? batchPreset, true)
   }
 
   const finished = jobs.flatMap((j) =>
@@ -143,6 +148,7 @@ export function Compressor({
               job={job}
               onOpen={() => setOpenId(job.id)}
               onRemove={() => store.remove(job.id)}
+              onFlatten={() => flattenJob(job)}
             />
           ))}
         </ul>
@@ -172,6 +178,8 @@ function statusLine(job: Job): string {
   if (job.status === 'error') return job.error ?? 'Failed'
   if (!job.result) return ''
   const { originalSize, blob, name } = job.result
+  if (job.result.kept && job.result.transparent)
+    return `${formatBytes(originalSize)} · kept — transparent PNG`
   const base = `${formatBytes(originalSize)} → ${formatBytes(blob.size)} · −${savingsPercent(originalSize, blob.size)}%`
   return name === job.file.name ? base : `${base} · ${name}`
 }
@@ -179,11 +187,13 @@ function statusLine(job: Job): string {
 function Row({
   job,
   onOpen,
-  onRemove
+  onRemove,
+  onFlatten
 }: {
   job: Job
   onOpen: () => void
   onRemove: () => void
+  onFlatten: () => void
 }) {
   const url = useObjectUrl(job.result?.blob)
 
@@ -206,6 +216,16 @@ function Row({
           {statusLine(job)}
         </span>
       </button>
+      {job.status === 'done' && job.result?.transparent && !job.flatten ? (
+        <Button
+          variant="outline"
+          size="xs"
+          aria-label={`Convert ${job.file.name} to JPEG`}
+          onClick={onFlatten}
+        >
+          Make JPEG
+        </Button>
+      ) : null}
       {job.status === 'done' && job.result && url ? (
         <a
           href={url}

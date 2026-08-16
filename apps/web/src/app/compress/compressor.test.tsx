@@ -9,15 +9,16 @@ import { Compressor } from './compressor'
 type Call = {
   file: File
   quality: number
+  opts?: { flatten?: boolean }
   resolve: (r: CompressResult) => void
   reject: (e: Error) => void
 }
 
 function fakeCompress() {
   const calls: Call[] = []
-  const compress: Compress = (file, quality) =>
+  const compress: Compress = (file, quality, opts) =>
     new Promise((resolve, reject) => {
-      calls.push({ file, quality, resolve, reject })
+      calls.push({ file, quality, opts, resolve, reject })
     })
   return { compress, calls }
 }
@@ -166,5 +167,36 @@ describe('Compressor', () => {
       ['a.jpg', 250],
       ['b.jpg', 500]
     ])
+  })
+
+  it('offers Convert to JPEG for a transparent PNG and re-runs it flattened', async () => {
+    const { compress, calls } = fakeCompress()
+    render(<Compressor compress={compress} isSafari />)
+    const logo = file('logo.png', 1000, 'image/png')
+    addFiles([logo])
+    await act(async () =>
+      calls[0].resolve({
+        ...result(logo, 1000),
+        type: 'image/png',
+        kept: true,
+        transparent: true
+      })
+    )
+    expect(screen.getByText('1000 B · kept — transparent PNG')).toBeDefined()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Convert logo.png to JPEG' })
+    )
+    expect(calls).toHaveLength(2)
+    expect(calls[1].opts?.flatten).toBe(true)
+    expect(screen.getByText('Compressing…')).toBeDefined()
+
+    await act(async () =>
+      calls[1].resolve({ ...result(logo, 300), name: 'logo.jpg' })
+    )
+    expect(screen.getByText('1000 B → 300 B · −70% · logo.jpg')).toBeDefined()
+    expect(
+      screen.queryByRole('button', { name: 'Convert logo.png to JPEG' })
+    ).toBeNull()
   })
 })
