@@ -757,7 +757,7 @@ export async function readCaptureDate(file: Blob): Promise<string | undefined> {
 notifies subscribers once, `update` merges a partial, `remove` and `clear`
 work, and `createJob` gives unique ids.
 
-- [ ] **7.1** Write the failing test — `store.test.ts`:
+- [x] **7.1** Write the failing test — `store.test.ts`:
 
 ```ts
 import { describe, expect, it, vi } from 'vitest'
@@ -823,9 +823,9 @@ describe('createMemoryStore', () => {
 })
 ```
 
-- [ ] **7.2** `pnpm -F web test store` → FAIL, cannot resolve `./store`
+- [x] **7.2** `pnpm -F web test store` → FAIL, cannot resolve `./store`
 
-- [ ] **7.3** `store.ts`:
+- [x] **7.3** `store.ts`:
 
 ```ts
 import type { Job } from './types'
@@ -870,7 +870,7 @@ export function createMemoryStore(initial: Job[] = []): Store {
 }
 ```
 
-- [ ] **7.4** `pnpm -F web test store` → 5 passed
+- [x] **7.4** `pnpm -F web test store` → 5 passed
 
 ---
 
