@@ -524,11 +524,11 @@ itself parses back to the same `DateTimeOriginal` and `Orientation = 1`;
 inserting it after SOI keeps the rest of the JPEG intact; a non-JPEG is refused;
 `readCaptureDate` returns the raw `YYYY:MM:DD HH:MM:SS` string or `undefined`.
 
-- [ ] **6.1** `pnpm -F web add exifr` — 7.1.x. Import from `'exifr'` (the full
+- [x] **6.1** `pnpm -F web add exifr` — 7.1.x. Import from `'exifr'` (the full
       ESM build). It has no `exports` map and types only for the root import, so
       `exifr/dist/lite.esm.mjs` would type-check as `any` — not worth a shim.
 
-- [ ] **6.2** Write the failing test — `exif.test.ts`:
+- [x] **6.2** Write the failing test — `exif.test.ts`:
 
 ```ts
 import exifr from 'exifr'
@@ -618,9 +618,9 @@ describe('readCaptureDate', () => {
 })
 ```
 
-- [ ] **6.3** `pnpm -F web test exif` → FAIL, cannot resolve `./exif`
+- [x] **6.3** `pnpm -F web test exif` → FAIL, cannot resolve `./exif`
 
-- [ ] **6.4** `exif.ts`. Layout is fixed and little-endian; offsets are relative to
+- [x] **6.4** `exif.ts`. Layout is fixed and little-endian; offsets are relative to
       the TIFF header, which is where EXIF offsets point:
 
 ```
@@ -739,7 +739,7 @@ export async function readCaptureDate(file: Blob): Promise<string | undefined> {
 }
 ```
 
-- [ ] **6.5** `pnpm -F web test exif` → 8 passed. If the round-trip test fails
+- [x] **6.5** `pnpm -F web test exif` → 8 passed. If the round-trip test fails
       with exifr complaining about an unknown segment or an unexpected end of
       file, the fault is in the fixture, not the writer — the fixture is
       `SOI + APP1 + EOI` and exifr stops scanning at EOI.
