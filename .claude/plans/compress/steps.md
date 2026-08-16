@@ -2093,7 +2093,7 @@ No `'use client'` — `Compressor` is the island.
 
 **Agent:** worker
 
-- [ ] **14.1** From `apps/web`, each must report nothing (`src/components/ui/` is
+- [x] **14.1** From `apps/web`, each must report nothing (`src/components/ui/` is
       generated and excluded on purpose):
 
 ```bash
@@ -2102,16 +2102,16 @@ grep -rnE '\[[0-9.]+(px|rem|em)\]|\[#[0-9a-fA-F]{3,8}\]' src/app src/lib
 grep -rn 'jsquash\|framer-motion' src
 ```
 
-- [ ] **14.2** From the repo root — only `pnpm-lock.yaml` may exist:
+- [x] **14.2** From the repo root — only `pnpm-lock.yaml` may exist:
 
 ```bash
 find . -name package-lock.json -not -path '*/node_modules/*'
 ```
 
-- [ ] **14.3** `pnpm -F web build` → `✓ Compiled successfully`; `/compress` is
+- [x] **14.3** `pnpm -F web build` → `✓ Compiled successfully`; `/compress` is
       listed as a static route; a worker chunk appears in the build output.
 
-- [ ] **14.4** Run the Verification table in `./plan.md`, including the iPhone
+- [x] **14.4** Run the Verification table in `./plan.md`, including the iPhone
       and Chrome rows. Record what the iPhone run shows (seconds for 10 photos,
       savings) under **Observed consequences** in
       `docs/adr/0001-browser-native-image-encoding.md`.
