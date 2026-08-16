@@ -1330,7 +1330,7 @@ pointer-down swaps the `src` to the original and pointer-up swaps it back; the
 active preset (override, else batch) carries `aria-pressed`; choosing a preset
 calls back with its name; Escape and the Close button both close.
 
-- [ ] **11.1** Write the failing test — `detail-view.test.tsx`:
+- [x] **11.1** Write the failing test — `detail-view.test.tsx`:
 
 ```tsx
 import { fireEvent, render, screen } from '@testing-library/react'
@@ -1463,9 +1463,9 @@ describe('DetailView', () => {
 })
 ```
 
-- [ ] **11.2** `pnpm -F web test detail-view` → FAIL, cannot resolve `./detail-view`
+- [x] **11.2** `pnpm -F web test detail-view` → FAIL, cannot resolve `./detail-view`
 
-- [ ] **11.3** `use-object-url.ts` — one object URL per blob, revoked when the blob
+- [x] **11.3** `use-object-url.ts` — one object URL per blob, revoked when the blob
       changes or the component unmounts:
 
 ```ts
@@ -1486,7 +1486,7 @@ export function useObjectUrl(blob: Blob | undefined): string | undefined {
 }
 ```
 
-- [ ] **11.4** `detail-view.tsx`:
+- [x] **11.4** `detail-view.tsx`:
 
 ```tsx
 'use client'
@@ -1592,7 +1592,7 @@ export function DetailView({ job, batchPreset, onPreset, onClose }: Props) {
 `WebkitTouchCallout` is a typed `CSSProperties` key — it stops iOS from opening
 the image-save sheet on the long press we use for comparing.
 
-- [ ] **11.5** `pnpm -F web test detail-view` → 6 passed
+- [x] **11.5** `pnpm -F web test detail-view` → 6 passed
 
 ---
 
