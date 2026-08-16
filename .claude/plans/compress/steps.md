@@ -1284,7 +1284,7 @@ export const compressInBrowser: Compress = (file, quality) => {
 `navigator.canShare`/`share` and asserts the button calls through with the
 files, which covers the only logic here.
 
-- [ ] **10.1** `share.ts`:
+- [x] **10.1** `share.ts`:
 
 ```ts
 import type { CompressResult } from './types'
@@ -1314,7 +1314,7 @@ export function shareFiles(files: File[]): Promise<void> {
 }
 ```
 
-- [ ] **10.2** `pnpm -F web typecheck` → clean.
+- [x] **10.2** `pnpm -F web typecheck` → clean.
 
 ---
 
