@@ -1610,7 +1610,7 @@ line; changing the batch preset re-encodes non-overridden rows at the new
 quality; "Save all" is absent when files cannot be shared and calls
 `navigator.share` with the result files when they can.
 
-- [ ] **12.1** Write the failing test — `compressor.test.tsx`:
+- [x] **12.1** Write the failing test — `compressor.test.tsx`:
 
 ```tsx
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
@@ -1781,9 +1781,9 @@ describe('Compressor', () => {
 })
 ```
 
-- [ ] **12.2** `pnpm -F web test compressor` → FAIL, cannot resolve `./compressor`
+- [x] **12.2** `pnpm -F web test compressor` → FAIL, cannot resolve `./compressor`
 
-- [ ] **12.3** `compressor.tsx`:
+- [x] **12.3** `compressor.tsx`:
 
 ```tsx
 'use client'
@@ -2016,7 +2016,7 @@ function Row({
 `shareFiles` is invoked synchronously in the click handler and `toFiles` is
 synchronous — keep it that way (see Traps in `./plan.md`).
 
-- [ ] **12.4** `pnpm -F web test compressor` → 9 passed
+- [x] **12.4** `pnpm -F web test compressor` → 9 passed
 
 ---
 
