@@ -100,7 +100,7 @@ if (typeof URL.createObjectURL !== 'function') {
 
 No test — static literals. Every later test imports them, so a typo fails there.
 
-- [ ] **2.1** `types.ts`:
+- [x] **2.1** `types.ts`:
 
 ```ts
 export type OutputType = 'image/jpeg' | 'image/png' | 'image/webp'
@@ -137,7 +137,7 @@ export type WorkerReply =
   | { ok: false; error: string }
 ```
 
-- [ ] **2.2** `presets.ts`:
+- [x] **2.2** `presets.ts`:
 
 ```ts
 import type { PresetName } from './types'
@@ -153,7 +153,7 @@ export const PRESET_ORDER: PresetName[] = ['smaller', 'balanced', 'better']
 export const DEFAULT_PRESET: PresetName = 'balanced'
 ```
 
-- [ ] **2.3** `pnpm -F web typecheck` → clean.
+- [x] **2.3** `pnpm -F web typecheck` → clean.
 
 ---
 
