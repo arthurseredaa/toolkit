@@ -15,7 +15,7 @@ export const tools: Tool[] = [
   {
     slug: 'compress',
     name: 'Compress',
-    description: 'Batch resize and convert',
+    description: 'Batch lossy compression',
     stat: '1.2k processed'
   },
   {

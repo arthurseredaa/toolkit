@@ -46,14 +46,14 @@ old description), `apps/web/vitest.setup.ts`
 No test of its own — generated code plus a string change already covered by
 `tool-grid.test.tsx`.
 
-- [ ] **1.1** `cd apps/web && pnpm dlx shadcn@latest add button -y`
+- [x] **1.1** `cd apps/web && pnpm dlx shadcn@latest add button -y`
       Then from the root `pnpm fmt` — the CLI writes double quotes and
       semicolons. Expect `button.tsx` with variants `default | outline |
       secondary | ghost | destructive | link` and sizes `xs | sm | default | lg |
       icon`. `class-variance-authority` lands in `apps/web/package.json`
       dependencies; leave it there. `shadcn` updates the **root** lockfile.
 
-- [ ] **1.2** `tools.ts` — the compress entry:
+- [x] **1.2** `tools.ts` — the compress entry:
 
 ```ts
   {
@@ -64,11 +64,11 @@ No test of its own — generated code plus a string change already covered by
   },
 ```
 
-- [ ] **1.3** `pnpm -F web test tool-grid` → passes (the test asserts the Vinted
+- [x] **1.3** `pnpm -F web test tool-grid` → passes (the test asserts the Vinted
       row, not this one; if it does assert `Batch resize and convert`, update the
       string there too).
 
-- [ ] **1.4** Append to `apps/web/vitest.setup.ts` — jsdom has no object URLs and
+- [x] **1.4** Append to `apps/web/vitest.setup.ts` — jsdom has no object URLs and
       the compress components create them on every row:
 
 ```ts
@@ -87,7 +87,7 @@ if (typeof URL.createObjectURL !== 'function') {
 }
 ```
 
-- [ ] **1.5** `pnpm -F web test` → still green; `pnpm -F web typecheck` → clean.
+- [x] **1.5** `pnpm -F web test` → still green; `pnpm -F web typecheck` → clean.
 
 ---
 

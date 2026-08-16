@@ -27,3 +27,17 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
 })
+
+if (typeof URL.createObjectURL !== 'function') {
+  let n = 0
+  Object.defineProperty(URL, 'createObjectURL', {
+    writable: true,
+    configurable: true,
+    value: () => `blob:jsdom/${n++}`
+  })
+  Object.defineProperty(URL, 'revokeObjectURL', {
+    writable: true,
+    configurable: true,
+    value: () => {}
+  })
+}
