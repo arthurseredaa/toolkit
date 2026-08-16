@@ -887,7 +887,7 @@ a worker `onerror` rejects the request, terminates that worker and a fresh one
 is spawned for the next request; `terminate()` terminates every worker and
 rejects what is still queued; `poolSize` clamps to `[2, 4]`.
 
-- [ ] **8.1** Write the failing test — `pool.test.ts`:
+- [x] **8.1** Write the failing test — `pool.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest'
@@ -999,9 +999,9 @@ describe('poolSize', () => {
 })
 ```
 
-- [ ] **8.2** `pnpm -F web test pool` → FAIL, cannot resolve `./pool`
+- [x] **8.2** `pnpm -F web test pool` → FAIL, cannot resolve `./pool`
 
-- [ ] **8.3** `pool.ts`:
+- [x] **8.3** `pool.ts`:
 
 ```ts
 /** The subset of `Worker` the pool needs. Real workers satisfy it as-is. */
@@ -1096,7 +1096,7 @@ export function createPool<Req, Res>({
 }
 ```
 
-- [ ] **8.4** `pnpm -F web test pool` → 5 passed
+- [x] **8.4** `pnpm -F web test pool` → 5 passed
 
 ---
 
