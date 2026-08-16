@@ -306,7 +306,7 @@ export function outputName(
 by the original and flagged `kept`; bytes format as `2.4 MB`; savings are a
 whole percent and never negative.
 
-- [ ] **4.1** Write the failing test — `size.test.ts`:
+- [x] **4.1** Write the failing test — `size.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest'
@@ -364,9 +364,9 @@ describe('savingsPercent', () => {
 })
 ```
 
-- [ ] **4.2** `pnpm -F web test size` → FAIL, cannot resolve `./size`
+- [x] **4.2** `pnpm -F web test size` → FAIL, cannot resolve `./size`
 
-- [ ] **4.3** `size.ts`:
+- [x] **4.3** `size.ts`:
 
 ```ts
 export function pickSmaller<T extends Blob>(
@@ -390,7 +390,7 @@ export function savingsPercent(before: number, after: number): number {
 }
 ```
 
-- [ ] **4.4** `pnpm -F web test size` → 6 passed
+- [x] **4.4** `pnpm -F web test size` → 6 passed
 
 ---
 
