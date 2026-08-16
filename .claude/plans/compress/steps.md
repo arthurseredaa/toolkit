@@ -167,7 +167,7 @@ export const DEFAULT_PRESET: PresetName = 'balanced'
 name gets `.jpg`; PNG with alpha stays PNG; WebP stays WebP only where the
 browser can encode it, else JPEG; anything else (HEIC on Safari) becomes JPEG.
 
-- [ ] **3.1** Write the failing test — `format.test.ts`:
+- [x] **3.1** Write the failing test — `format.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest'
@@ -247,9 +247,9 @@ describe('outputName', () => {
 })
 ```
 
-- [ ] **3.2** `pnpm -F web test format` → FAIL, cannot resolve `./format`
+- [x] **3.2** `pnpm -F web test format` → FAIL, cannot resolve `./format`
 
-- [ ] **3.3** `format.ts`:
+- [x] **3.3** `format.ts`:
 
 ```ts
 import type { OutputType } from './types'
@@ -292,7 +292,7 @@ export function outputName(
 }
 ```
 
-- [ ] **3.4** `pnpm -F web test format` → 9 passed
+- [x] **3.4** `pnpm -F web test format` → 9 passed
 
 ---
 
