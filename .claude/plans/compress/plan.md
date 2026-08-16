@@ -23,6 +23,7 @@ The `/compress` card in `apps/web/src/components/dashboard/tools.ts` already exi
 | Quality | **three batch-wide presets** Smaller / Balanced / Better = q 0.6 / 0.8 / 0.9, default Balanced | one tap on a phone; q 78 vs 82 is invisible |
 | Detail view | tap a row → full-screen result; **hold to see original**; the same three presets re-encode this file only | swap-in-place is how the eye catches artefacts; a slider or side-by-side is more code for less |
 | Never larger than input | result ≥ original size → keep original, show 0% | protects already-compressed JPEGs |
+| Transparent PNG | stays PNG (lossless, usually kept as-is) and the row says so; a **Convert to JPEG** button on that row re-runs it flattened on the canvas default (black) | RGBA exports with a few 99%-alpha pixels are common; the user decides per file, not a threshold |
 | Delivery | **"Save all" via `navigator.share({ files })`** when `canShare`; per-file download otherwise. No ZIP | one tap into iOS Photos; browsers throttle multi-download |
 | Metadata | re-insert **only** `DateTimeOriginal` + `Orientation = 1`; read with `exifr` lite, write our own APP1 | Photos files the result under the shot date; no GPS leak; no maintained EXIF writer exists |
 | Input | `<input multiple accept="image/*">` + drop zone; **`.heic` filtered out silently outside Safari**, one "skipped N" line | iOS transcodes HEIC on pick; Chrome cannot decode it |

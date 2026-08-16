@@ -2115,3 +2115,181 @@ find . -name package-lock.json -not -path '*/node_modules/*'
       and Chrome rows. Record what the iPhone run shows (seconds for 10 photos,
       savings) under **Observed consequences** in
       `docs/adr/0001-browser-native-image-encoding.md`.
+
+---
+
+## Task 15 — Transparent PNG: say so, offer JPEG
+
+**Agent:** tdd -> worker
+
+**Modifies:** `apps/web/src/lib/compress/types.ts`, `client.ts`, `worker.ts`,
+`apps/web/src/app/compress/compressor.tsx`, `compressor.test.tsx`
+
+**The test that proves it:** a done PNG whose result is `transparent` shows a
+"kept — transparent PNG" line and a per-row **Convert to JPEG** button; clicking
+it calls `compress` again with `{ flatten: true }` and, once resolved, the row
+shows the JPEG result and the button is gone.
+
+- [ ] **15.1** Write the failing test — append to `compressor.test.tsx`. First
+      widen the fake so it records the third argument:
+
+```tsx
+type Call = {
+  file: File
+  quality: number
+  opts?: { flatten?: boolean }
+  resolve: (r: CompressResult) => void
+  reject: (e: Error) => void
+}
+
+function fakeCompress() {
+  const calls: Call[] = []
+  const compress: Compress = (file, quality, opts) =>
+    new Promise((resolve, reject) => {
+      calls.push({ file, quality, opts, resolve, reject })
+    })
+  return { compress, calls }
+}
+```
+
+Then the test, inside `describe('Compressor')`:
+
+```tsx
+  it('offers Convert to JPEG for a transparent PNG and re-runs it flattened', async () => {
+    const { compress, calls } = fakeCompress()
+    render(<Compressor compress={compress} isSafari />)
+    const logo = file('logo.png', 1000, 'image/png')
+    addFiles([logo])
+    await act(async () =>
+      calls[0].resolve({
+        ...result(logo, 1000),
+        type: 'image/png',
+        kept: true,
+        transparent: true
+      })
+    )
+    expect(screen.getByText('1000 B · kept — transparent PNG')).toBeDefined()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Convert logo.png to JPEG' })
+    )
+    expect(calls).toHaveLength(2)
+    expect(calls[1].opts?.flatten).toBe(true)
+    expect(screen.getByText('Compressing…')).toBeDefined()
+
+    await act(async () =>
+      calls[1].resolve({ ...result(logo, 300), name: 'logo.jpg' })
+    )
+    expect(screen.getByText('1000 B → 300 B · −70% · logo.jpg')).toBeDefined()
+    expect(
+      screen.queryByRole('button', { name: 'Convert logo.png to JPEG' })
+    ).toBeNull()
+  })
+```
+
+- [ ] **15.2** `pnpm -F web test compressor` → FAIL on `getByText('1000 B · kept — transparent PNG')`
+      (typecheck will also complain about `transparent` and the third argument —
+      that is expected until 15.3).
+
+- [ ] **15.3** `types.ts` — three additive changes:
+
+```ts
+export type CompressResult = {
+  blob: Blob
+  name: string
+  type: OutputType | string
+  /** true when the encoded file was not smaller, so the original is returned */
+  kept: boolean
+  originalSize: number
+  /** input had an alpha channel and the output stayed PNG (lossless) */
+  transparent?: boolean
+}
+
+export type Job = {
+  id: string
+  file: File
+  status: JobStatus
+  /** per-file override; undefined means "use the batch preset" */
+  preset?: PresetName
+  /** per-file: ignore alpha and encode as JPEG (transparent → black) */
+  flatten?: boolean
+  result?: CompressResult
+  error?: string
+}
+
+/** What the UI sends to the worker. */
+export type CompressRequest = { file: File; quality: number; flatten?: boolean }
+```
+
+- [ ] **15.4** `client.ts` — the third argument travels to the worker:
+
+```ts
+export type Compress = (
+  file: File,
+  quality: number,
+  opts?: { flatten?: boolean }
+) => Promise<CompressResult>
+
+export function createCompressor(): Compress {
+  const pool = createPool<CompressRequest, CompressResult>({
+    size: poolSize(navigator.hardwareConcurrency),
+    spawn: () =>
+      new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
+  })
+  return (file, quality, opts) =>
+    pool.run({ file, quality, flatten: opts?.flatten })
+}
+```
+
+and `compressInBrowser` forwards `opts` the same way.
+
+- [ ] **15.5** `worker.ts` — `compress` destructures `flatten` and:
+
+```ts
+    const alpha =
+      !flatten &&
+      (file.type === 'image/png' || file.type === 'image/webp') &&
+      hasAlpha(canvas)
+```
+
+and the returned result gains `transparent: alpha && type === 'image/png'`.
+Nothing else changes: `planOutput` already maps `hasAlpha: false` to JPEG,
+and `convertToBlob` composites transparent pixels onto black for JPEG.
+
+- [ ] **15.6** `compressor.tsx`:
+
+  - `run(job, preset, flatten = job.flatten)` and the call becomes
+    `compress(job.file, PRESETS[preset].quality, { flatten })`.
+  - new handler:
+
+```tsx
+  function flattenJob(job: Job) {
+    store.update(job.id, { flatten: true })
+    run(job, job.preset ?? batchPreset, true)
+  }
+```
+
+  - `Row` gets `onFlatten: () => void` (wire `onFlatten={() => flattenJob(job)}`)
+    and renders, between the open button and Download:
+
+```tsx
+      {job.status === 'done' && job.result?.transparent && !job.flatten ? (
+        <Button
+          variant="outline"
+          size="xs"
+          aria-label={`Convert ${job.file.name} to JPEG`}
+          onClick={onFlatten}
+        >
+          Make JPEG
+        </Button>
+      ) : null}
+```
+
+  - `statusLine`: before building `base`, add
+
+```ts
+  if (job.result.kept && job.result.transparent)
+    return `${formatBytes(originalSize)} · kept — transparent PNG`
+```
+
+- [ ] **15.7** `pnpm -F web test compressor` → 10 passed; `pnpm -F web typecheck` clean.

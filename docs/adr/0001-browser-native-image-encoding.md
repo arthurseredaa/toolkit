@@ -85,7 +85,11 @@ UI or the queue.
 
 ## Observed consequences
 
-_(fill in as they appear)_
+- 2026-08-16 — two 4K RGBA wallpapers (5.9 MB, 6.7 MB) came back at −0%:
+  ~0.4% of pixels had alpha 226–254, so the strict `hasAlpha` check kept them
+  PNG and the lossless re-encode was larger than the source. Fix chosen: keep
+  the strict check, label the row, and add a per-file "Convert to JPEG"
+  (flatten) action rather than an alpha threshold. See `.claude/plans/compress/steps.md` Task 15.
 
 ## Success metrics
 
