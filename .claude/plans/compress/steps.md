@@ -562,12 +562,15 @@ describe('buildExifSegment', () => {
   it('round-trips through exifr with orientation 1', async () => {
     const seg = buildExifSegment({ dateTimeOriginal: DATE })
     const jpeg = concat(SOI, seg, EOI)
+    // exifr names 0x9004 `CreateDate` (ExifTool style), and translates
+    // Orientation to a label unless translateValues is off.
     const tags = await exifr.parse(jpeg, {
       reviveValues: false,
-      pick: ['DateTimeOriginal', 'DateTimeDigitized', 'Orientation']
+      translateValues: false,
+      pick: ['DateTimeOriginal', 'CreateDate', 'Orientation']
     })
     expect(tags.DateTimeOriginal).toBe(DATE)
-    expect(tags.DateTimeDigitized).toBe(DATE)
+    expect(tags.CreateDate).toBe(DATE)
     expect(tags.Orientation).toBe(1)
   })
 
