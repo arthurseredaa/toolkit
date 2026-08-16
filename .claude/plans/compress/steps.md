@@ -2030,7 +2030,7 @@ synchronous — keep it that way (see Traps in `./plan.md`).
 a link back to `/`, and the file input — from one synchronous Server Component
 whose only client island is `Compressor`.
 
-- [ ] **13.1** Write the failing test — `page.test.tsx`:
+- [x] **13.1** Write the failing test — `page.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react'
@@ -2048,9 +2048,9 @@ describe('CompressPage', () => {
 })
 ```
 
-- [ ] **13.2** `pnpm -F web test app/compress/page` → FAIL, cannot resolve `./page`
+- [x] **13.2** `pnpm -F web test app/compress/page` → FAIL, cannot resolve `./page`
 
-- [ ] **13.3** `page.tsx`:
+- [x] **13.3** `page.tsx`:
 
 ```tsx
 import type { Metadata } from 'next'
@@ -2084,7 +2084,7 @@ export default function CompressPage() {
 
 No `'use client'` — `Compressor` is the island.
 
-- [ ] **13.4** `pnpm -F web test` → every file passes; note the count for the
+- [x] **13.4** `pnpm -F web test` → every file passes; note the count for the
       Verification table.
 
 ---
