@@ -2293,3 +2293,192 @@ and `convertToBlob` composites transparent pixels onto black for JPEG.
 ```
 
 - [x] **15.7** `pnpm -F web test compressor` → 10 passed; `pnpm -F web typecheck` clean.
+
+---
+
+## Task 16 — Download all as one ZIP
+
+**Agent:** tdd -> worker
+
+**Creates:** `apps/web/src/lib/compress/share.test.ts`
+**Modifies:** `apps/web/package.json`, `apps/web/vitest.setup.ts`,
+`apps/web/src/lib/compress/share.ts`,
+`apps/web/src/app/compress/compressor.tsx`, `compressor.test.tsx`
+
+**The test that proves it:** with two photos done a **Download all (2)** button
+appears (it is absent at one); clicking it clicks an anchor whose `download` is
+`photos-<today>.zip`, and `zipResults` returns a blob starting with the ZIP
+local-file signature `PK\x03\x04` that carries a de-duplicated name.
+
+- [x] **16.1** Write the failing tests. New file
+      `apps/web/src/lib/compress/share.test.ts`:
+
+```ts
+import { describe, expect, it } from 'vitest'
+
+import { uniqueNames, zipName, zipResults } from './share'
+import type { CompressResult } from './types'
+
+const result = (name: string, size: number): CompressResult => ({
+  blob: new Blob([new Uint8Array(size)], { type: 'image/jpeg' }),
+  name,
+  type: 'image/jpeg',
+  kept: false,
+  originalSize: size * 2
+})
+
+describe('uniqueNames', () => {
+  it('leaves distinct names alone', () => {
+    expect(uniqueNames(['a.jpg', 'b.png'])).toEqual(['a.jpg', 'b.png'])
+  })
+
+  it('numbers a repeat before the extension', () => {
+    expect(uniqueNames(['a.jpg', 'a.jpg', 'a.jpg'])).toEqual([
+      'a.jpg',
+      'a (2).jpg',
+      'a (3).jpg'
+    ])
+  })
+})
+
+describe('zipName', () => {
+  it('stamps the local day', () => {
+    expect(zipName(new Date(2026, 7, 16, 10))).toBe('photos-2026-08-16.zip')
+  })
+})
+
+describe('zipResults', () => {
+  it('packs every result into one archive under unique names', async () => {
+    const blob = await zipResults([result('a.jpg', 10), result('a.jpg', 20)])
+    const bytes = new Uint8Array(await blob.arrayBuffer())
+    expect(Array.from(bytes.slice(0, 4))).toEqual([0x50, 0x4b, 0x03, 0x04])
+    // store-only, so the entry names sit in the archive as plain bytes
+    expect(new TextDecoder().decode(bytes)).toContain('a (2).jpg')
+  })
+})
+```
+
+      and append to `compressor.test.tsx` (add `waitFor` to the
+      `@testing-library/react` import and `zipName` to the imports):
+
+```tsx
+  it('packs the finished photos into one zip', async () => {
+    const clicks: { name: string; href: string }[] = []
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(
+      function (this: HTMLAnchorElement) {
+        clicks.push({ name: this.download, href: this.href })
+      }
+    )
+    const { compress, calls } = fakeCompress()
+    render(<Compressor compress={compress} isSafari />)
+    const a = file('a.jpg', 1000)
+    const b = file('b.jpg', 2000)
+    addFiles([a, b])
+
+    await act(async () => calls[0].resolve(result(a, 250)))
+    expect(screen.queryByRole('button', { name: /Download all/ })).toBeNull()
+
+    await act(async () => calls[1].resolve(result(b, 500)))
+    fireEvent.click(screen.getByRole('button', { name: 'Download all (2)' }))
+
+    await waitFor(() => expect(clicks).toHaveLength(1))
+    expect(clicks[0].name).toBe(zipName())
+    expect(clicks[0].href.startsWith('blob:')).toBe(true)
+  })
+```
+
+- [x] **16.2** `pnpm -F web test share` → FAIL, `Failed to resolve import
+      "client-zip"`.
+
+- [x] **16.3** From the repo root: `pnpm -F web add client-zip` (2.5.0). It
+      stores, never deflates — right for already-compressed photos, and 2.6 kB
+      gzipped.
+
+- [x] **16.4** Append to `apps/web/vitest.setup.ts` — a setup file runs before
+      any test module, so this lands before `client-zip` is imported:
+
+```ts
+// jsdom's Blob has no `stream()`. client-zip polyfills it as
+// `new Response(this).body`, and undici's Response reads a Blob by calling
+// `stream()` — the polyfill calls itself until the stack blows
+// (`RangeError: Maximum call stack size exceeded`). Define a real one first,
+// from `arrayBuffer()`, which jsdom does implement.
+if (!('stream' in Blob.prototype)) {
+  Object.defineProperty(Blob.prototype, 'stream', {
+    writable: true,
+    configurable: true,
+    value(this: Blob) {
+      const blob = this
+      return new ReadableStream({
+        async start(controller) {
+          controller.enqueue(new Uint8Array(await blob.arrayBuffer()))
+          controller.close()
+        }
+      })
+    }
+  })
+}
+```
+
+- [x] **16.5** `apps/web/src/lib/compress/share.ts` — add the import
+      `import { downloadZip } from 'client-zip'` and three exports:
+
+```ts
+export function uniqueNames(names: string[]): string[] {
+  // TODO(human)
+}
+
+export function zipName(now = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const day = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+  return `photos-${day}.zip`
+}
+
+export function zipResults(results: CompressResult[]): Promise<Blob> {
+  const names = uniqueNames(results.map((r) => r.name))
+  const files = results.map(
+    (r, i) => new File([r.blob], names[i], { type: r.type })
+  )
+  return downloadZip(files).blob()
+}
+```
+
+- [x] **16.6** `apps/web/src/app/compress/compressor.tsx`:
+
+  - import `zipName` and `zipResults` alongside the existing share imports.
+  - state: `const [packing, setPacking] = useState(false)`.
+  - handler:
+
+```tsx
+  function downloadPack() {
+    setPacking(true)
+    zipResults(finished)
+      .then((blob) => {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = zipName()
+        a.click()
+        // revoking in the same tick cancels the download in Firefox
+        setTimeout(() => URL.revokeObjectURL(url), 0)
+      })
+      .finally(() => setPacking(false))
+  }
+```
+
+  - render it right after the existing "Save all" button, so the two never
+    fight for the same slot:
+
+```tsx
+      {finished.length > 1 ? (
+        <Button variant="outline" disabled={packing} onClick={downloadPack}>
+          {packing ? 'Packing…' : `Download all (${finished.length})`}
+        </Button>
+      ) : null}
+```
+
+  The `Packing…` label is not asserted — a store-only zip of test blobs
+  resolves too fast to observe deterministically.
+
+- [x] **16.7** `pnpm -F web test` → all files pass, `share.test.ts` among them;
+      `pnpm -F web typecheck` clean.

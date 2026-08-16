@@ -1,7 +1,15 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within
+} from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { Compress } from '@/lib/compress/client'
+import { zipName } from '@/lib/compress/share'
 import type { CompressResult } from '@/lib/compress/types'
 
 import { Compressor } from './compressor'
@@ -198,5 +206,29 @@ describe('Compressor', () => {
     expect(
       screen.queryByRole('button', { name: 'Convert logo.png to JPEG' })
     ).toBeNull()
+  })
+
+  it('packs the finished photos into one zip', async () => {
+    const clicks: { name: string; href: string }[] = []
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(
+      function (this: HTMLAnchorElement) {
+        clicks.push({ name: this.download, href: this.href })
+      }
+    )
+    const { compress, calls } = fakeCompress()
+    render(<Compressor compress={compress} isSafari />)
+    const a = file('a.jpg', 1000)
+    const b = file('b.jpg', 2000)
+    addFiles([a, b])
+
+    await act(async () => calls[0].resolve(result(a, 250)))
+    expect(screen.queryByRole('button', { name: /Download all/ })).toBeNull()
+
+    await act(async () => calls[1].resolve(result(b, 500)))
+    fireEvent.click(screen.getByRole('button', { name: 'Download all (2)' }))
+
+    await waitFor(() => expect(clicks).toHaveLength(1))
+    expect(clicks[0].name).toBe(zipName())
+    expect(clicks[0].href.startsWith('blob:')).toBe(true)
   })
 })

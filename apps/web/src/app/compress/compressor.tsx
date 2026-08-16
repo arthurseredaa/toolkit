@@ -6,7 +6,13 @@ import { Button } from '@/components/ui/button'
 import { compressInBrowser, type Compress } from '@/lib/compress/client'
 import { ACCEPT, filterFiles, isSafariUA } from '@/lib/compress/input'
 import { DEFAULT_PRESET, PRESET_ORDER, PRESETS } from '@/lib/compress/presets'
-import { canShareFiles, shareFiles, toFiles } from '@/lib/compress/share'
+import {
+  canShareFiles,
+  shareFiles,
+  toFiles,
+  zipName,
+  zipResults
+} from '@/lib/compress/share'
 import { formatBytes, savingsPercent } from '@/lib/compress/size'
 import { createJob, createMemoryStore } from '@/lib/compress/store'
 import type { Job, PresetName } from '@/lib/compress/types'
@@ -40,6 +46,7 @@ export function Compressor({
   const [batchPreset, setBatchPreset] = useState<PresetName>(DEFAULT_PRESET)
   const [skippedHeic, setSkippedHeic] = useState(0)
   const [openId, setOpenId] = useState<string | null>(null)
+  const [packing, setPacking] = useState(false)
   const runs = useRef(new Map<string, number>())
 
   function run(job: Job, preset: PresetName, flatten = job.flatten) {
@@ -84,6 +91,21 @@ export function Compressor({
   function flattenJob(job: Job) {
     store.update(job.id, { flatten: true })
     run(job, job.preset ?? batchPreset, true)
+  }
+
+  function downloadPack() {
+    setPacking(true)
+    zipResults(finished)
+      .then((blob) => {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = zipName()
+        a.click()
+        // revoking in the same tick cancels the download in Firefox
+        setTimeout(() => URL.revokeObjectURL(url), 0)
+      })
+      .finally(() => setPacking(false))
   }
 
   const finished = jobs.flatMap((j) =>
@@ -157,6 +179,12 @@ export function Compressor({
       {finished.length > 0 && shareable ? (
         <Button onClick={() => void shareFiles(toFiles(finished))}>
           Save all ({finished.length})
+        </Button>
+      ) : null}
+
+      {finished.length > 1 ? (
+        <Button variant="outline" disabled={packing} onClick={downloadPack}>
+          {packing ? 'Packing…' : `Download all (${finished.length})`}
         </Button>
       ) : null}
 

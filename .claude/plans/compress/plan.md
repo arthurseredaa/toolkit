@@ -2,7 +2,7 @@
 
 **Ships:** `/compress` takes many photos, compresses them in Web Workers, shows per-file
 status and savings, opens any result full-screen with hold-to-compare and a per-file
-preset, and hands the batch to the iOS share sheet.
+preset, and hands the batch to the iOS share sheet or downloads it as one ZIP.
 **Next:** none.
 
 ## Context
@@ -24,7 +24,7 @@ The `/compress` card in `apps/web/src/components/dashboard/tools.ts` already exi
 | Detail view | tap a row → full-screen result; **hold to see original**; the same three presets re-encode this file only | swap-in-place is how the eye catches artefacts; a slider or side-by-side is more code for less |
 | Never larger than input | result ≥ original size → keep original, show 0% | protects already-compressed JPEGs |
 | Transparent PNG | stays PNG (lossless, usually kept as-is) and the row says so; a **Convert to JPEG** button on that row re-runs it flattened on the canvas default (black) | RGBA exports with a few 99%-alpha pixels are common; the user decides per file, not a threshold |
-| Delivery | **"Save all" via `navigator.share({ files })`** when `canShare`; per-file download otherwise. No ZIP | one tap into iOS Photos; browsers throttle multi-download |
+| Delivery | **"Save all" via `navigator.share({ files })`** when `canShare`; per-file download always; ★ **"Download all"** packs every finished photo into one store-only ZIP once two are done | one tap into Photos on a phone; on desktop the share sheet is missing or useless and browsers throttle multi-download, so an archive is the convenient path. Store-only: the photos are already compressed |
 | Metadata | re-insert **only** `DateTimeOriginal` + `Orientation = 1`; read with `exifr` lite, write our own APP1 | Photos files the result under the shot date; no GPS leak; no maintained EXIF writer exists |
 | Input | `<input multiple accept="image/*">` + drop zone; **`.heic` filtered out silently outside Safari**, one "skipped N" line | iOS transcodes HEIC on pick; Chrome cannot decode it |
 | Rows | one row per file: queued → working → done / error, error text on its own row | batch never stops on one bad file |
@@ -52,7 +52,7 @@ The `/compress` card in `apps/web/src/components/dashboard/tools.ts` already exi
 
 ## Out of scope
 
-- Resize presets, ZIP download, IndexedDB persistence, "cancel batch"
+- Resize presets, IndexedDB persistence, "cancel batch", ZIP *compression* (stored, never deflated)
 - WASM codecs (mozjpeg, oxipng, quantizer), HEIC decoding outside Safari
 - Login / access control (separate, later)
 - Any change to the tools index beyond the one-line description
@@ -66,6 +66,7 @@ The `/compress` card in `apps/web/src/components/dashboard/tools.ts` already exi
 | `pnpm -F web build` | `✓ Compiled successfully`, `/compress` listed |
 | iPhone Safari, 10 camera photos | rows finish in seconds, sizes drop ≥ 2×, hold shows original, "Save all" lands in Photos under the original dates, portrait stays portrait |
 | Chrome desktop, drop a `.heic` | one "skipped" line, no error row |
+| Chrome desktop, 3 photos → **Download all** | `photos-<today>.zip` lands in Downloads and unzips to 3 files, same-named ones numbered |
 
 ---
 

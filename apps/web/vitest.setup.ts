@@ -41,3 +41,24 @@ if (typeof URL.createObjectURL !== 'function') {
     value: () => {}
   })
 }
+
+// jsdom's Blob has no `stream()`. client-zip polyfills it as
+// `new Response(this).body`, and undici's Response reads a Blob by calling
+// `stream()` — the polyfill calls itself until the stack blows
+// (`RangeError: Maximum call stack size exceeded`). Define a real one first,
+// from `arrayBuffer()`, which jsdom does implement.
+if (!('stream' in Blob.prototype)) {
+  Object.defineProperty(Blob.prototype, 'stream', {
+    writable: true,
+    configurable: true,
+    value(this: Blob) {
+      const blob = this
+      return new ReadableStream({
+        async start(controller) {
+          controller.enqueue(new Uint8Array(await blob.arrayBuffer()))
+          controller.close()
+        }
+      })
+    }
+  })
+}
