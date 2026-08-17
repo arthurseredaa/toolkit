@@ -46,14 +46,14 @@ old description), `apps/web/vitest.setup.ts`
 No test of its own — generated code plus a string change already covered by
 `tool-grid.test.tsx`.
 
-- [ ] **1.1** `cd apps/web && pnpm dlx shadcn@latest add button -y`
+- [x] **1.1** `cd apps/web && pnpm dlx shadcn@latest add button -y`
       Then from the root `pnpm fmt` — the CLI writes double quotes and
       semicolons. Expect `button.tsx` with variants `default | outline |
       secondary | ghost | destructive | link` and sizes `xs | sm | default | lg |
       icon`. `class-variance-authority` lands in `apps/web/package.json`
       dependencies; leave it there. `shadcn` updates the **root** lockfile.
 
-- [ ] **1.2** `tools.ts` — the compress entry:
+- [x] **1.2** `tools.ts` — the compress entry:
 
 ```ts
   {
@@ -64,11 +64,11 @@ No test of its own — generated code plus a string change already covered by
   },
 ```
 
-- [ ] **1.3** `pnpm -F web test tool-grid` → passes (the test asserts the Vinted
+- [x] **1.3** `pnpm -F web test tool-grid` → passes (the test asserts the Vinted
       row, not this one; if it does assert `Batch resize and convert`, update the
       string there too).
 
-- [ ] **1.4** Append to `apps/web/vitest.setup.ts` — jsdom has no object URLs and
+- [x] **1.4** Append to `apps/web/vitest.setup.ts` — jsdom has no object URLs and
       the compress components create them on every row:
 
 ```ts
@@ -87,7 +87,7 @@ if (typeof URL.createObjectURL !== 'function') {
 }
 ```
 
-- [ ] **1.5** `pnpm -F web test` → still green; `pnpm -F web typecheck` → clean.
+- [x] **1.5** `pnpm -F web test` → still green; `pnpm -F web typecheck` → clean.
 
 ---
 
@@ -100,7 +100,7 @@ if (typeof URL.createObjectURL !== 'function') {
 
 No test — static literals. Every later test imports them, so a typo fails there.
 
-- [ ] **2.1** `types.ts`:
+- [x] **2.1** `types.ts`:
 
 ```ts
 export type OutputType = 'image/jpeg' | 'image/png' | 'image/webp'
@@ -137,7 +137,7 @@ export type WorkerReply =
   | { ok: false; error: string }
 ```
 
-- [ ] **2.2** `presets.ts`:
+- [x] **2.2** `presets.ts`:
 
 ```ts
 import type { PresetName } from './types'
@@ -153,7 +153,7 @@ export const PRESET_ORDER: PresetName[] = ['smaller', 'balanced', 'better']
 export const DEFAULT_PRESET: PresetName = 'balanced'
 ```
 
-- [ ] **2.3** `pnpm -F web typecheck` → clean.
+- [x] **2.3** `pnpm -F web typecheck` → clean.
 
 ---
 
@@ -167,7 +167,7 @@ export const DEFAULT_PRESET: PresetName = 'balanced'
 name gets `.jpg`; PNG with alpha stays PNG; WebP stays WebP only where the
 browser can encode it, else JPEG; anything else (HEIC on Safari) becomes JPEG.
 
-- [ ] **3.1** Write the failing test — `format.test.ts`:
+- [x] **3.1** Write the failing test — `format.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest'
@@ -247,9 +247,9 @@ describe('outputName', () => {
 })
 ```
 
-- [ ] **3.2** `pnpm -F web test format` → FAIL, cannot resolve `./format`
+- [x] **3.2** `pnpm -F web test format` → FAIL, cannot resolve `./format`
 
-- [ ] **3.3** `format.ts`:
+- [x] **3.3** `format.ts`:
 
 ```ts
 import type { OutputType } from './types'
@@ -292,7 +292,7 @@ export function outputName(
 }
 ```
 
-- [ ] **3.4** `pnpm -F web test format` → 9 passed
+- [x] **3.4** `pnpm -F web test format` → 9 passed
 
 ---
 
@@ -306,7 +306,7 @@ export function outputName(
 by the original and flagged `kept`; bytes format as `2.4 MB`; savings are a
 whole percent and never negative.
 
-- [ ] **4.1** Write the failing test — `size.test.ts`:
+- [x] **4.1** Write the failing test — `size.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest'
@@ -364,9 +364,9 @@ describe('savingsPercent', () => {
 })
 ```
 
-- [ ] **4.2** `pnpm -F web test size` → FAIL, cannot resolve `./size`
+- [x] **4.2** `pnpm -F web test size` → FAIL, cannot resolve `./size`
 
-- [ ] **4.3** `size.ts`:
+- [x] **4.3** `size.ts`:
 
 ```ts
 export function pickSmaller<T extends Blob>(
@@ -390,7 +390,7 @@ export function savingsPercent(before: number, after: number): number {
 }
 ```
 
-- [ ] **4.4** `pnpm -F web test size` → 6 passed
+- [x] **4.4** `pnpm -F web test size` → 6 passed
 
 ---
 
@@ -405,7 +405,7 @@ or MIME) are dropped and counted; in Safari they pass; non-image files are
 always dropped; the Safari detector says no to Chrome-on-Mac and yes to iOS
 Safari.
 
-- [ ] **5.1** Write the failing test — `input.test.ts`:
+- [x] **5.1** Write the failing test — `input.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest'
@@ -466,9 +466,9 @@ describe('ACCEPT', () => {
 })
 ```
 
-- [ ] **5.2** `pnpm -F web test input` → FAIL, cannot resolve `./input`
+- [x] **5.2** `pnpm -F web test input` → FAIL, cannot resolve `./input`
 
-- [ ] **5.3** `input.ts`:
+- [x] **5.3** `input.ts`:
 
 ```ts
 const HEIC_RE = /\.hei[cf]$/i
@@ -508,7 +508,7 @@ export function filterFiles(
 }
 ```
 
-- [ ] **5.4** `pnpm -F web test input` → 6 passed
+- [x] **5.4** `pnpm -F web test input` → 6 passed
 
 ---
 
@@ -524,11 +524,11 @@ itself parses back to the same `DateTimeOriginal` and `Orientation = 1`;
 inserting it after SOI keeps the rest of the JPEG intact; a non-JPEG is refused;
 `readCaptureDate` returns the raw `YYYY:MM:DD HH:MM:SS` string or `undefined`.
 
-- [ ] **6.1** `pnpm -F web add exifr` — 7.1.x. Import from `'exifr'` (the full
+- [x] **6.1** `pnpm -F web add exifr` — 7.1.x. Import from `'exifr'` (the full
       ESM build). It has no `exports` map and types only for the root import, so
       `exifr/dist/lite.esm.mjs` would type-check as `any` — not worth a shim.
 
-- [ ] **6.2** Write the failing test — `exif.test.ts`:
+- [x] **6.2** Write the failing test — `exif.test.ts`:
 
 ```ts
 import exifr from 'exifr'
@@ -562,12 +562,15 @@ describe('buildExifSegment', () => {
   it('round-trips through exifr with orientation 1', async () => {
     const seg = buildExifSegment({ dateTimeOriginal: DATE })
     const jpeg = concat(SOI, seg, EOI)
+    // exifr names 0x9004 `CreateDate` (ExifTool style), and translates
+    // Orientation to a label unless translateValues is off.
     const tags = await exifr.parse(jpeg, {
       reviveValues: false,
-      pick: ['DateTimeOriginal', 'DateTimeDigitized', 'Orientation']
+      translateValues: false,
+      pick: ['DateTimeOriginal', 'CreateDate', 'Orientation']
     })
     expect(tags.DateTimeOriginal).toBe(DATE)
-    expect(tags.DateTimeDigitized).toBe(DATE)
+    expect(tags.CreateDate).toBe(DATE)
     expect(tags.Orientation).toBe(1)
   })
 
@@ -615,9 +618,9 @@ describe('readCaptureDate', () => {
 })
 ```
 
-- [ ] **6.3** `pnpm -F web test exif` → FAIL, cannot resolve `./exif`
+- [x] **6.3** `pnpm -F web test exif` → FAIL, cannot resolve `./exif`
 
-- [ ] **6.4** `exif.ts`. Layout is fixed and little-endian; offsets are relative to
+- [x] **6.4** `exif.ts`. Layout is fixed and little-endian; offsets are relative to
       the TIFF header, which is where EXIF offsets point:
 
 ```
@@ -736,7 +739,7 @@ export async function readCaptureDate(file: Blob): Promise<string | undefined> {
 }
 ```
 
-- [ ] **6.5** `pnpm -F web test exif` → 8 passed. If the round-trip test fails
+- [x] **6.5** `pnpm -F web test exif` → 8 passed. If the round-trip test fails
       with exifr complaining about an unknown segment or an unexpected end of
       file, the fault is in the fixture, not the writer — the fixture is
       `SOI + APP1 + EOI` and exifr stops scanning at EOI.
@@ -754,7 +757,7 @@ export async function readCaptureDate(file: Blob): Promise<string | undefined> {
 notifies subscribers once, `update` merges a partial, `remove` and `clear`
 work, and `createJob` gives unique ids.
 
-- [ ] **7.1** Write the failing test — `store.test.ts`:
+- [x] **7.1** Write the failing test — `store.test.ts`:
 
 ```ts
 import { describe, expect, it, vi } from 'vitest'
@@ -820,9 +823,9 @@ describe('createMemoryStore', () => {
 })
 ```
 
-- [ ] **7.2** `pnpm -F web test store` → FAIL, cannot resolve `./store`
+- [x] **7.2** `pnpm -F web test store` → FAIL, cannot resolve `./store`
 
-- [ ] **7.3** `store.ts`:
+- [x] **7.3** `store.ts`:
 
 ```ts
 import type { Job } from './types'
@@ -867,7 +870,7 @@ export function createMemoryStore(initial: Job[] = []): Store {
 }
 ```
 
-- [ ] **7.4** `pnpm -F web test store` → 5 passed
+- [x] **7.4** `pnpm -F web test store` → 5 passed
 
 ---
 
@@ -884,7 +887,7 @@ a worker `onerror` rejects the request, terminates that worker and a fresh one
 is spawned for the next request; `terminate()` terminates every worker and
 rejects what is still queued; `poolSize` clamps to `[2, 4]`.
 
-- [ ] **8.1** Write the failing test — `pool.test.ts`:
+- [x] **8.1** Write the failing test — `pool.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest'
@@ -996,9 +999,9 @@ describe('poolSize', () => {
 })
 ```
 
-- [ ] **8.2** `pnpm -F web test pool` → FAIL, cannot resolve `./pool`
+- [x] **8.2** `pnpm -F web test pool` → FAIL, cannot resolve `./pool`
 
-- [ ] **8.3** `pool.ts`:
+- [x] **8.3** `pool.ts`:
 
 ```ts
 /** The subset of `Worker` the pool needs. Real workers satisfy it as-is. */
@@ -1093,7 +1096,7 @@ export function createPool<Req, Res>({
 }
 ```
 
-- [ ] **8.4** `pnpm -F web test pool` → 5 passed
+- [x] **8.4** `pnpm -F web test pool` → 5 passed
 
 ---
 
@@ -1110,7 +1113,7 @@ the on-device rows of the Verification table in `./plan.md`; the policy these
 files call (`planOutput`, `pickSmaller`, `insertExif`, `createPool`) is already
 tested. Type-check is the gate for this task.
 
-- [ ] **9.1** `encode.ts` — the swappable encoder. Anything that replaces the
+- [x] **9.1** `encode.ts` — the swappable encoder. Anything that replaces the
       native codec later replaces this file only:
 
 ```ts
@@ -1174,7 +1177,7 @@ export async function canEncodeWebp(): Promise<boolean> {
 }
 ```
 
-- [ ] **9.2** `worker.ts` — one request in, one reply out. `File` in and `Blob`
+- [x] **9.2** `worker.ts` — one request in, one reply out. `File` in and `Blob`
       out are cloned by reference by the structured clone algorithm; nothing
       here needs a transfer list. Never post an `ImageBitmap` or a raw buffer:
 
@@ -1234,7 +1237,7 @@ self.onmessage = async (ev: MessageEvent<CompressRequest>) => {
 }
 ```
 
-- [ ] **9.3** `client.ts` — the only place a real `Worker` is constructed.
+- [x] **9.3** `client.ts` — the only place a real `Worker` is constructed.
       Turbopack bundles `new Worker(new URL('./worker.ts', import.meta.url))`
       as a separate entry; the `type: 'module'` option is required because
       `worker.ts` uses `import`:
@@ -1266,7 +1269,7 @@ export const compressInBrowser: Compress = (file, quality) => {
 }
 ```
 
-- [ ] **9.4** `pnpm -F web typecheck` → clean. `pnpm lint` → clean.
+- [x] **9.4** `pnpm -F web typecheck` → clean. `pnpm lint` → clean.
 
 ---
 
@@ -1281,7 +1284,7 @@ export const compressInBrowser: Compress = (file, quality) => {
 `navigator.canShare`/`share` and asserts the button calls through with the
 files, which covers the only logic here.
 
-- [ ] **10.1** `share.ts`:
+- [x] **10.1** `share.ts`:
 
 ```ts
 import type { CompressResult } from './types'
@@ -1311,7 +1314,7 @@ export function shareFiles(files: File[]): Promise<void> {
 }
 ```
 
-- [ ] **10.2** `pnpm -F web typecheck` → clean.
+- [x] **10.2** `pnpm -F web typecheck` → clean.
 
 ---
 
@@ -1327,7 +1330,7 @@ pointer-down swaps the `src` to the original and pointer-up swaps it back; the
 active preset (override, else batch) carries `aria-pressed`; choosing a preset
 calls back with its name; Escape and the Close button both close.
 
-- [ ] **11.1** Write the failing test — `detail-view.test.tsx`:
+- [x] **11.1** Write the failing test — `detail-view.test.tsx`:
 
 ```tsx
 import { fireEvent, render, screen } from '@testing-library/react'
@@ -1460,9 +1463,9 @@ describe('DetailView', () => {
 })
 ```
 
-- [ ] **11.2** `pnpm -F web test detail-view` → FAIL, cannot resolve `./detail-view`
+- [x] **11.2** `pnpm -F web test detail-view` → FAIL, cannot resolve `./detail-view`
 
-- [ ] **11.3** `use-object-url.ts` — one object URL per blob, revoked when the blob
+- [x] **11.3** `use-object-url.ts` — one object URL per blob, revoked when the blob
       changes or the component unmounts:
 
 ```ts
@@ -1483,7 +1486,7 @@ export function useObjectUrl(blob: Blob | undefined): string | undefined {
 }
 ```
 
-- [ ] **11.4** `detail-view.tsx`:
+- [x] **11.4** `detail-view.tsx`:
 
 ```tsx
 'use client'
@@ -1589,7 +1592,7 @@ export function DetailView({ job, batchPreset, onPreset, onClose }: Props) {
 `WebkitTouchCallout` is a typed `CSSProperties` key — it stops iOS from opening
 the image-save sheet on the long press we use for comparing.
 
-- [ ] **11.5** `pnpm -F web test detail-view` → 6 passed
+- [x] **11.5** `pnpm -F web test detail-view` → 6 passed
 
 ---
 
@@ -1607,7 +1610,7 @@ line; changing the batch preset re-encodes non-overridden rows at the new
 quality; "Save all" is absent when files cannot be shared and calls
 `navigator.share` with the result files when they can.
 
-- [ ] **12.1** Write the failing test — `compressor.test.tsx`:
+- [x] **12.1** Write the failing test — `compressor.test.tsx`:
 
 ```tsx
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
@@ -1778,9 +1781,9 @@ describe('Compressor', () => {
 })
 ```
 
-- [ ] **12.2** `pnpm -F web test compressor` → FAIL, cannot resolve `./compressor`
+- [x] **12.2** `pnpm -F web test compressor` → FAIL, cannot resolve `./compressor`
 
-- [ ] **12.3** `compressor.tsx`:
+- [x] **12.3** `compressor.tsx`:
 
 ```tsx
 'use client'
@@ -2013,7 +2016,7 @@ function Row({
 `shareFiles` is invoked synchronously in the click handler and `toFiles` is
 synchronous — keep it that way (see Traps in `./plan.md`).
 
-- [ ] **12.4** `pnpm -F web test compressor` → 9 passed
+- [x] **12.4** `pnpm -F web test compressor` → 9 passed
 
 ---
 
@@ -2027,7 +2030,7 @@ synchronous — keep it that way (see Traps in `./plan.md`).
 a link back to `/`, and the file input — from one synchronous Server Component
 whose only client island is `Compressor`.
 
-- [ ] **13.1** Write the failing test — `page.test.tsx`:
+- [x] **13.1** Write the failing test — `page.test.tsx`:
 
 ```tsx
 import { render, screen } from '@testing-library/react'
@@ -2045,9 +2048,9 @@ describe('CompressPage', () => {
 })
 ```
 
-- [ ] **13.2** `pnpm -F web test app/compress/page` → FAIL, cannot resolve `./page`
+- [x] **13.2** `pnpm -F web test app/compress/page` → FAIL, cannot resolve `./page`
 
-- [ ] **13.3** `page.tsx`:
+- [x] **13.3** `page.tsx`:
 
 ```tsx
 import type { Metadata } from 'next'
@@ -2081,7 +2084,7 @@ export default function CompressPage() {
 
 No `'use client'` — `Compressor` is the island.
 
-- [ ] **13.4** `pnpm -F web test` → every file passes; note the count for the
+- [x] **13.4** `pnpm -F web test` → every file passes; note the count for the
       Verification table.
 
 ---
@@ -2090,7 +2093,7 @@ No `'use client'` — `Compressor` is the island.
 
 **Agent:** worker
 
-- [ ] **14.1** From `apps/web`, each must report nothing (`src/components/ui/` is
+- [x] **14.1** From `apps/web`, each must report nothing (`src/components/ui/` is
       generated and excluded on purpose):
 
 ```bash
@@ -2099,16 +2102,383 @@ grep -rnE '\[[0-9.]+(px|rem|em)\]|\[#[0-9a-fA-F]{3,8}\]' src/app src/lib
 grep -rn 'jsquash\|framer-motion' src
 ```
 
-- [ ] **14.2** From the repo root — only `pnpm-lock.yaml` may exist:
+- [x] **14.2** From the repo root — only `pnpm-lock.yaml` may exist:
 
 ```bash
 find . -name package-lock.json -not -path '*/node_modules/*'
 ```
 
-- [ ] **14.3** `pnpm -F web build` → `✓ Compiled successfully`; `/compress` is
+- [x] **14.3** `pnpm -F web build` → `✓ Compiled successfully`; `/compress` is
       listed as a static route; a worker chunk appears in the build output.
 
-- [ ] **14.4** Run the Verification table in `./plan.md`, including the iPhone
+- [x] **14.4** Run the Verification table in `./plan.md`, including the iPhone
       and Chrome rows. Record what the iPhone run shows (seconds for 10 photos,
       savings) under **Observed consequences** in
       `docs/adr/0001-browser-native-image-encoding.md`.
+
+---
+
+## Task 15 — Transparent PNG: say so, offer JPEG
+
+**Agent:** tdd -> worker
+
+**Modifies:** `apps/web/src/lib/compress/types.ts`, `client.ts`, `worker.ts`,
+`apps/web/src/app/compress/compressor.tsx`, `compressor.test.tsx`
+
+**The test that proves it:** a done PNG whose result is `transparent` shows a
+"kept — transparent PNG" line and a per-row **Convert to JPEG** button; clicking
+it calls `compress` again with `{ flatten: true }` and, once resolved, the row
+shows the JPEG result and the button is gone.
+
+- [x] **15.1** Write the failing test — append to `compressor.test.tsx`. First
+      widen the fake so it records the third argument:
+
+```tsx
+type Call = {
+  file: File
+  quality: number
+  opts?: { flatten?: boolean }
+  resolve: (r: CompressResult) => void
+  reject: (e: Error) => void
+}
+
+function fakeCompress() {
+  const calls: Call[] = []
+  const compress: Compress = (file, quality, opts) =>
+    new Promise((resolve, reject) => {
+      calls.push({ file, quality, opts, resolve, reject })
+    })
+  return { compress, calls }
+}
+```
+
+Then the test, inside `describe('Compressor')`:
+
+```tsx
+  it('offers Convert to JPEG for a transparent PNG and re-runs it flattened', async () => {
+    const { compress, calls } = fakeCompress()
+    render(<Compressor compress={compress} isSafari />)
+    const logo = file('logo.png', 1000, 'image/png')
+    addFiles([logo])
+    await act(async () =>
+      calls[0].resolve({
+        ...result(logo, 1000),
+        type: 'image/png',
+        kept: true,
+        transparent: true
+      })
+    )
+    expect(screen.getByText('1000 B · kept — transparent PNG')).toBeDefined()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Convert logo.png to JPEG' })
+    )
+    expect(calls).toHaveLength(2)
+    expect(calls[1].opts?.flatten).toBe(true)
+    expect(screen.getByText('Compressing…')).toBeDefined()
+
+    await act(async () =>
+      calls[1].resolve({ ...result(logo, 300), name: 'logo.jpg' })
+    )
+    expect(screen.getByText('1000 B → 300 B · −70% · logo.jpg')).toBeDefined()
+    expect(
+      screen.queryByRole('button', { name: 'Convert logo.png to JPEG' })
+    ).toBeNull()
+  })
+```
+
+- [x] **15.2** `pnpm -F web test compressor` → FAIL on `getByText('1000 B · kept — transparent PNG')`
+      (typecheck will also complain about `transparent` and the third argument —
+      that is expected until 15.3).
+
+- [x] **15.3** `types.ts` — three additive changes:
+
+```ts
+export type CompressResult = {
+  blob: Blob
+  name: string
+  type: OutputType | string
+  /** true when the encoded file was not smaller, so the original is returned */
+  kept: boolean
+  originalSize: number
+  /** input had an alpha channel and the output stayed PNG (lossless) */
+  transparent?: boolean
+}
+
+export type Job = {
+  id: string
+  file: File
+  status: JobStatus
+  /** per-file override; undefined means "use the batch preset" */
+  preset?: PresetName
+  /** per-file: ignore alpha and encode as JPEG (transparent → black) */
+  flatten?: boolean
+  result?: CompressResult
+  error?: string
+}
+
+/** What the UI sends to the worker. */
+export type CompressRequest = { file: File; quality: number; flatten?: boolean }
+```
+
+- [x] **15.4** `client.ts` — the third argument travels to the worker:
+
+```ts
+export type Compress = (
+  file: File,
+  quality: number,
+  opts?: { flatten?: boolean }
+) => Promise<CompressResult>
+
+export function createCompressor(): Compress {
+  const pool = createPool<CompressRequest, CompressResult>({
+    size: poolSize(navigator.hardwareConcurrency),
+    spawn: () =>
+      new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
+  })
+  return (file, quality, opts) =>
+    pool.run({ file, quality, flatten: opts?.flatten })
+}
+```
+
+and `compressInBrowser` forwards `opts` the same way.
+
+- [x] **15.5** `worker.ts` — `compress` destructures `flatten` and:
+
+```ts
+    const alpha =
+      !flatten &&
+      (file.type === 'image/png' || file.type === 'image/webp') &&
+      hasAlpha(canvas)
+```
+
+and the returned result gains `transparent: alpha && type === 'image/png'`.
+Nothing else changes: `planOutput` already maps `hasAlpha: false` to JPEG,
+and `convertToBlob` composites transparent pixels onto black for JPEG.
+
+- [x] **15.6** `compressor.tsx`:
+
+  - `run(job, preset, flatten = job.flatten)` and the call becomes
+    `compress(job.file, PRESETS[preset].quality, { flatten })`.
+  - new handler:
+
+```tsx
+  function flattenJob(job: Job) {
+    store.update(job.id, { flatten: true })
+    run(job, job.preset ?? batchPreset, true)
+  }
+```
+
+  - `Row` gets `onFlatten: () => void` (wire `onFlatten={() => flattenJob(job)}`)
+    and renders, between the open button and Download:
+
+```tsx
+      {job.status === 'done' && job.result?.transparent && !job.flatten ? (
+        <Button
+          variant="outline"
+          size="xs"
+          aria-label={`Convert ${job.file.name} to JPEG`}
+          onClick={onFlatten}
+        >
+          Make JPEG
+        </Button>
+      ) : null}
+```
+
+  - `statusLine`: before building `base`, add
+
+```ts
+  if (job.result.kept && job.result.transparent)
+    return `${formatBytes(originalSize)} · kept — transparent PNG`
+```
+
+- [x] **15.7** `pnpm -F web test compressor` → 10 passed; `pnpm -F web typecheck` clean.
+
+---
+
+## Task 16 — Download all as one ZIP
+
+**Agent:** tdd -> worker
+
+**Creates:** `apps/web/src/lib/compress/share.test.ts`
+**Modifies:** `apps/web/package.json`, `apps/web/vitest.setup.ts`,
+`apps/web/src/lib/compress/share.ts`,
+`apps/web/src/app/compress/compressor.tsx`, `compressor.test.tsx`
+
+**The test that proves it:** with two photos done a **Download all (2)** button
+appears (it is absent at one); clicking it clicks an anchor whose `download` is
+`photos-<today>.zip`, and `zipResults` returns a blob starting with the ZIP
+local-file signature `PK\x03\x04` that carries a de-duplicated name.
+
+- [x] **16.1** Write the failing tests. New file
+      `apps/web/src/lib/compress/share.test.ts`:
+
+```ts
+import { describe, expect, it } from 'vitest'
+
+import { uniqueNames, zipName, zipResults } from './share'
+import type { CompressResult } from './types'
+
+const result = (name: string, size: number): CompressResult => ({
+  blob: new Blob([new Uint8Array(size)], { type: 'image/jpeg' }),
+  name,
+  type: 'image/jpeg',
+  kept: false,
+  originalSize: size * 2
+})
+
+describe('uniqueNames', () => {
+  it('leaves distinct names alone', () => {
+    expect(uniqueNames(['a.jpg', 'b.png'])).toEqual(['a.jpg', 'b.png'])
+  })
+
+  it('numbers a repeat before the extension', () => {
+    expect(uniqueNames(['a.jpg', 'a.jpg', 'a.jpg'])).toEqual([
+      'a.jpg',
+      'a (2).jpg',
+      'a (3).jpg'
+    ])
+  })
+})
+
+describe('zipName', () => {
+  it('stamps the local day', () => {
+    expect(zipName(new Date(2026, 7, 16, 10))).toBe('photos-2026-08-16.zip')
+  })
+})
+
+describe('zipResults', () => {
+  it('packs every result into one archive under unique names', async () => {
+    const blob = await zipResults([result('a.jpg', 10), result('a.jpg', 20)])
+    const bytes = new Uint8Array(await blob.arrayBuffer())
+    expect(Array.from(bytes.slice(0, 4))).toEqual([0x50, 0x4b, 0x03, 0x04])
+    // store-only, so the entry names sit in the archive as plain bytes
+    expect(new TextDecoder().decode(bytes)).toContain('a (2).jpg')
+  })
+})
+```
+
+      and append to `compressor.test.tsx` (add `waitFor` to the
+      `@testing-library/react` import and `zipName` to the imports):
+
+```tsx
+  it('packs the finished photos into one zip', async () => {
+    const clicks: { name: string; href: string }[] = []
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(
+      function (this: HTMLAnchorElement) {
+        clicks.push({ name: this.download, href: this.href })
+      }
+    )
+    const { compress, calls } = fakeCompress()
+    render(<Compressor compress={compress} isSafari />)
+    const a = file('a.jpg', 1000)
+    const b = file('b.jpg', 2000)
+    addFiles([a, b])
+
+    await act(async () => calls[0].resolve(result(a, 250)))
+    expect(screen.queryByRole('button', { name: /Download all/ })).toBeNull()
+
+    await act(async () => calls[1].resolve(result(b, 500)))
+    fireEvent.click(screen.getByRole('button', { name: 'Download all (2)' }))
+
+    await waitFor(() => expect(clicks).toHaveLength(1))
+    expect(clicks[0].name).toBe(zipName())
+    expect(clicks[0].href.startsWith('blob:')).toBe(true)
+  })
+```
+
+- [x] **16.2** `pnpm -F web test share` → FAIL, `Failed to resolve import
+      "client-zip"`.
+
+- [x] **16.3** From the repo root: `pnpm -F web add client-zip` (2.5.0). It
+      stores, never deflates — right for already-compressed photos, and 2.6 kB
+      gzipped.
+
+- [x] **16.4** Append to `apps/web/vitest.setup.ts` — a setup file runs before
+      any test module, so this lands before `client-zip` is imported:
+
+```ts
+// jsdom's Blob has no `stream()`. client-zip polyfills it as
+// `new Response(this).body`, and undici's Response reads a Blob by calling
+// `stream()` — the polyfill calls itself until the stack blows
+// (`RangeError: Maximum call stack size exceeded`). Define a real one first,
+// from `arrayBuffer()`, which jsdom does implement.
+if (!('stream' in Blob.prototype)) {
+  Object.defineProperty(Blob.prototype, 'stream', {
+    writable: true,
+    configurable: true,
+    value(this: Blob) {
+      const blob = this
+      return new ReadableStream({
+        async start(controller) {
+          controller.enqueue(new Uint8Array(await blob.arrayBuffer()))
+          controller.close()
+        }
+      })
+    }
+  })
+}
+```
+
+- [x] **16.5** `apps/web/src/lib/compress/share.ts` — add the import
+      `import { downloadZip } from 'client-zip'` and three exports:
+
+```ts
+export function uniqueNames(names: string[]): string[] {
+  // TODO(human)
+}
+
+export function zipName(now = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const day = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+  return `photos-${day}.zip`
+}
+
+export function zipResults(results: CompressResult[]): Promise<Blob> {
+  const names = uniqueNames(results.map((r) => r.name))
+  const files = results.map(
+    (r, i) => new File([r.blob], names[i], { type: r.type })
+  )
+  return downloadZip(files).blob()
+}
+```
+
+- [x] **16.6** `apps/web/src/app/compress/compressor.tsx`:
+
+  - import `zipName` and `zipResults` alongside the existing share imports.
+  - state: `const [packing, setPacking] = useState(false)`.
+  - handler:
+
+```tsx
+  function downloadPack() {
+    setPacking(true)
+    zipResults(finished)
+      .then((blob) => {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = zipName()
+        a.click()
+        // revoking in the same tick cancels the download in Firefox
+        setTimeout(() => URL.revokeObjectURL(url), 0)
+      })
+      .finally(() => setPacking(false))
+  }
+```
+
+  - render it right after the existing "Save all" button, so the two never
+    fight for the same slot:
+
+```tsx
+      {finished.length > 1 ? (
+        <Button variant="outline" disabled={packing} onClick={downloadPack}>
+          {packing ? 'Packing…' : `Download all (${finished.length})`}
+        </Button>
+      ) : null}
+```
+
+  The `Packing…` label is not asserted — a store-only zip of test blobs
+  resolves too fast to observe deterministically.
+
+- [x] **16.7** `pnpm -F web test` → all files pass, `share.test.ts` among them;
+      `pnpm -F web typecheck` clean.
