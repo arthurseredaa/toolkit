@@ -31,9 +31,9 @@ export const tools: Tool[] = [
     stat: '214 clicks'
   },
   {
-    slug: 'analytics',
-    name: 'Analytics',
-    description: 'Daily channel snapshots',
-    stat: 'synced 2h ago'
+    slug: 'paywall-remover',
+    name: 'Paywall Remover',
+    description: 'Read without paywalls',
+    stat: '0 articles'
   }
 ]
