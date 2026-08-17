@@ -52,10 +52,9 @@ if (!('stream' in Blob.prototype)) {
     writable: true,
     configurable: true,
     value(this: Blob) {
-      const blob = this
       return new ReadableStream({
-        async start(controller) {
-          controller.enqueue(new Uint8Array(await blob.arrayBuffer()))
+        start: async (controller) => {
+          controller.enqueue(new Uint8Array(await this.arrayBuffer()))
           controller.close()
         }
       })

@@ -23,6 +23,14 @@ describe('uniqueNames', () => {
       'a (3).jpg'
     ])
   })
+
+  it('skips a number the batch already carries', () => {
+    expect(uniqueNames(['a.jpg', 'a (2).jpg', 'a.jpg'])).toEqual([
+      'a.jpg',
+      'a (2).jpg',
+      'a (3).jpg'
+    ])
+  })
 })
 
 describe('zipName', () => {

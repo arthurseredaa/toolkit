@@ -26,16 +26,26 @@ export function shareFiles(files: File[]): Promise<void> {
   })
 }
 
+/**
+ * Two entries with one name make an archive that unzips to a single file, so
+ * the counter has to skip names the batch already carries — `a.jpg` next to a
+ * real `a (2).jpg` numbers up to `a (3).jpg`, not into the collision.
+ */
 export function uniqueNames(names: string[]): string[] {
-  const seen = new Map<string, number>()
+  const taken = new Set<string>()
   return names.map((name) => {
-    const count = (seen.get(name) ?? 0) + 1
-    seen.set(name, count)
-    if (count === 1) return name
+    if (!taken.has(name)) {
+      taken.add(name)
+      return name
+    }
     const dot = name.lastIndexOf('.')
-    return dot <= 0
-      ? `${name} (${count})`
-      : `${name.slice(0, dot)} (${count})${name.slice(dot)}`
+    const stem = dot <= 0 ? name : name.slice(0, dot)
+    const ext = dot <= 0 ? '' : name.slice(dot)
+    let n = 2
+    while (taken.has(`${stem} (${n})${ext}`)) n++
+    const unique = `${stem} (${n})${ext}`
+    taken.add(unique)
+    return unique
   })
 }
 

@@ -26,13 +26,16 @@ type Props = {
   compress?: Compress
   /** Injected in tests; defaults to user-agent detection after hydration. */
   isSafari?: boolean
+  /** Injected in tests; defaults to a media query after hydration. */
+  hasFinePointer?: boolean
 }
 
 const noSubscribe = () => () => {}
 
 export function Compressor({
   compress = compressInBrowser,
-  isSafari: isSafariProp
+  isSafari: isSafariProp,
+  hasFinePointer: finePointerProp
 }: Props) {
   const [store] = useState(createMemoryStore)
   const jobs = useSyncExternalStore(store.subscribe, store.all, store.all)
@@ -43,17 +46,37 @@ export function Compressor({
   )
   const safari = isSafariProp ?? detectedSafari
 
+  // A zip is the desktop answer; on a phone the share sheet is the good one.
+  const detectedFinePointer = useSyncExternalStore(
+    noSubscribe,
+    () => window.matchMedia('(pointer: fine)').matches,
+    () => false
+  )
+  const finePointer = finePointerProp ?? detectedFinePointer
+
   const [batchPreset, setBatchPreset] = useState<PresetName>(DEFAULT_PRESET)
   const [skippedHeic, setSkippedHeic] = useState(0)
+  const [skippedUnsupported, setSkippedUnsupported] = useState(0)
   const [openId, setOpenId] = useState<string | null>(null)
   const [packing, setPacking] = useState(false)
+  const [packError, setPackError] = useState<string | null>(null)
   const runs = useRef(new Map<string, number>())
 
-  function run(job: Job, preset: PresetName, flatten = job.flatten) {
+  const finished = jobs.flatMap((j) =>
+    j.status === 'done' && j.result ? [j.result] : []
+  )
+  const shareable = canShareFiles(toFiles(finished))
+  const open = openId ? jobs.find((j) => j.id === openId) : undefined
+
+  // `flatten` is read with `??` rather than taken as a default parameter: a
+  // member expression in a default makes React Compiler bail on the whole
+  // component (`lowerReorderableExpression`), silently un-memoizing it.
+  function run(job: Job, preset: PresetName, flatten?: boolean) {
+    const flat = flatten ?? job.flatten
     const token = (runs.current.get(job.id) ?? 0) + 1
     runs.current.set(job.id, token)
     store.update(job.id, { status: 'working', error: undefined })
-    compress(job.file, PRESETS[preset].quality, { flatten }).then(
+    compress(job.file, PRESETS[preset].quality, { flatten: flat }).then(
       (result) => {
         if (runs.current.get(job.id) === token)
           store.update(job.id, { status: 'done', result })
@@ -69,10 +92,11 @@ export function Compressor({
   }
 
   function addFiles(list: Iterable<File>) {
-    const { accepted, skippedHeic: skipped } = filterFiles(list, {
+    const { accepted, skippedHeic, skippedUnsupported } = filterFiles(list, {
       isSafari: safari
     })
-    setSkippedHeic(skipped)
+    setSkippedHeic(skippedHeic)
+    setSkippedUnsupported(skippedUnsupported)
     const added = accepted.map(createJob)
     store.add(added)
     for (const job of added) run(job, batchPreset)
@@ -95,6 +119,7 @@ export function Compressor({
 
   function downloadPack() {
     setPacking(true)
+    setPackError(null)
     zipResults(finished)
       .then((blob) => {
         const url = URL.createObjectURL(blob)
@@ -105,14 +130,13 @@ export function Compressor({
         // revoking in the same tick cancels the download in Firefox
         setTimeout(() => URL.revokeObjectURL(url), 0)
       })
+      // The archive is built whole in memory, so this is the batch that did
+      // not fit. Saying so beats a button that quietly does nothing.
+      .catch((e: unknown) =>
+        setPackError(e instanceof Error ? e.message : String(e))
+      )
       .finally(() => setPacking(false))
   }
-
-  const finished = jobs.flatMap((j) =>
-    j.status === 'done' && j.result ? [j.result] : []
-  )
-  const shareable = canShareFiles(toFiles(finished))
-  const open = openId ? jobs.find((j) => j.id === openId) : undefined
 
   return (
     <section className="mt-8 flex flex-col gap-6">
@@ -162,6 +186,12 @@ export function Compressor({
         </p>
       ) : null}
 
+      {skippedUnsupported > 0 ? (
+        <p role="status" className="font-mono text-xs text-muted-foreground">
+          Skipped {skippedUnsupported} — only JPEG, PNG and WebP are supported.
+        </p>
+      ) : null}
+
       {jobs.length > 0 ? (
         <ul className="divide-y divide-border rounded-xl border">
           {jobs.map((job) => (
@@ -182,10 +212,16 @@ export function Compressor({
         </Button>
       ) : null}
 
-      {finished.length > 1 ? (
+      {finePointer && finished.length > 1 ? (
         <Button variant="outline" disabled={packing} onClick={downloadPack}>
           {packing ? 'Packing…' : `Download all (${finished.length})`}
         </Button>
+      ) : null}
+
+      {packError ? (
+        <p role="alert" className="font-mono text-xs text-destructive">
+          Could not build the zip ({packError}). Try fewer photos at once.
+        </p>
       ) : null}
 
       {open ? (

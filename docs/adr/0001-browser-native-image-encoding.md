@@ -90,6 +90,14 @@ UI or the queue.
   PNG and the lossless re-encode was larger than the source. Fix chosen: keep
   the strict check, label the row, and add a per-file "Convert to JPEG"
   (flatten) action rather than an alpha threshold. See `.claude/plans/compress/steps.md` Task 15.
+- 2026-08-17 — "Download all" builds the archive **whole in memory**:
+  `downloadZip(...).blob()` buffers every byte before the download can start, so
+  a batch costs roughly its own size again in RAM — ~150 MB for 50 × 3 MB
+  results, on top of the originals the store still holds. Store-only entries
+  keep it from being worse (no deflate buffers, no CPU). Accepted for now: the
+  button reports a failure instead of going quiet, and the streaming fix
+  (`makeZip()` piped through a Service Worker response) is a separate change
+  that only pays off at batch sizes this tool has not met yet.
 
 ## Success metrics
 

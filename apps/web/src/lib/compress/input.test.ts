@@ -28,25 +28,41 @@ describe('filterFiles', () => {
   const jpg = f('a.jpg', 'image/jpeg')
   const png = f('b.png', 'image/png')
   const pdf = f('doc.pdf', 'application/pdf')
+  const gif = f('loop.gif', 'image/gif')
 
   it('drops HEIC outside Safari and counts it', () => {
     expect(
       filterFiles([heic, heifNoMime, jpg, png], { isSafari: false })
     ).toEqual({
       accepted: [jpg, png],
-      skippedHeic: 2
+      skippedHeic: 2,
+      skippedUnsupported: 0
     })
   })
 
   it('lets HEIC through in Safari', () => {
     expect(filterFiles([heic, jpg], { isSafari: true })).toEqual({
       accepted: [heic, jpg],
-      skippedHeic: 0
+      skippedHeic: 0,
+      skippedUnsupported: 0
+    })
+  })
+
+  it('drops image types the encoder does not know, and says how many', () => {
+    // a GIF would come back as one JPEG frame, reported as a healthy saving
+    expect(filterFiles([gif, jpg], { isSafari: true })).toEqual({
+      accepted: [jpg],
+      skippedHeic: 0,
+      skippedUnsupported: 1
     })
   })
 
   it('always drops non-images', () => {
-    expect(filterFiles([pdf, jpg], { isSafari: true }).accepted).toEqual([jpg])
+    expect(filterFiles([pdf, jpg], { isSafari: true })).toEqual({
+      accepted: [jpg],
+      skippedHeic: 0,
+      skippedUnsupported: 1
+    })
   })
 })
 

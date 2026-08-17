@@ -216,7 +216,7 @@ describe('Compressor', () => {
       }
     )
     const { compress, calls } = fakeCompress()
-    render(<Compressor compress={compress} isSafari />)
+    render(<Compressor compress={compress} isSafari hasFinePointer />)
     const a = file('a.jpg', 1000)
     const b = file('b.jpg', 2000)
     addFiles([a, b])
@@ -230,5 +230,55 @@ describe('Compressor', () => {
     await waitFor(() => expect(clicks).toHaveLength(1))
     expect(clicks[0].name).toBe(zipName())
     expect(clicks[0].href.startsWith('blob:')).toBe(true)
+  })
+  it('leaves the zip button off a touch device, where sharing wins', async () => {
+    const { compress, calls } = fakeCompress()
+    render(<Compressor compress={compress} isSafari hasFinePointer={false} />)
+    const a = file('a.jpg', 1000)
+    const b = file('b.jpg', 2000)
+    addFiles([a, b])
+    await act(async () => {
+      calls[0].resolve(result(a, 250))
+      calls[1].resolve(result(b, 500))
+    })
+    expect(screen.queryByRole('button', { name: /Download all/ })).toBeNull()
+  })
+
+  it('reports a failed pack instead of leaving the button silent', async () => {
+    // The archive is the only application/zip on the page; the row previews
+    // need the real thing. Matched by type, not `instanceof Blob` — the zip
+    // comes back from undici's Response as a *Node* Blob, so the cross-realm
+    // instanceof is false.
+    const createObjectURL = URL.createObjectURL
+    vi.spyOn(URL, 'createObjectURL').mockImplementation((obj) => {
+      if ((obj as Blob).type === 'application/zip')
+        throw new Error('out of memory')
+      return createObjectURL(obj)
+    })
+    const { compress, calls } = fakeCompress()
+    render(<Compressor compress={compress} isSafari hasFinePointer />)
+    const a = file('a.jpg', 1000)
+    const b = file('b.jpg', 2000)
+    addFiles([a, b])
+    await act(async () => {
+      calls[0].resolve(result(a, 250))
+      calls[1].resolve(result(b, 500))
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download all (2)' }))
+    const alert = await screen.findByRole('alert')
+    expect(alert.textContent).toContain('out of memory')
+    const button = screen.getByRole('button', { name: 'Download all (2)' })
+    expect((button as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('skips an image type the encoder does not know', () => {
+    const { compress } = fakeCompress()
+    render(<Compressor compress={compress} isSafari />)
+    addFiles([file('loop.gif', 1000, 'image/gif')])
+    expect(
+      screen.getByText('Skipped 1 — only JPEG, PNG and WebP are supported.')
+    ).toBeDefined()
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0)
   })
 })
