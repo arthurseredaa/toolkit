@@ -2,10 +2,10 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { loadAgentDefinition, runAgent } from './agent.mjs'
+import { loadAgentDefinition, READ_ONLY_TOOLS, runAgent } from './agent.mjs'
 import { resolveGates, runGates, sh } from './gates.mjs'
 import { assertBranch, commitTask, createPr } from './git.mjs'
-import { firstPending, loadPlan, tickTask } from './plan.mjs'
+import { firstPending, loadPlan, tickTask, writeIssues } from './plan.mjs'
 import { decideNext } from './policy.mjs'
 
 function parseArgs(argv) {
@@ -60,6 +60,37 @@ function taskPrompt(chunk, task, extra) {
     .join('\n')
 }
 
+// Two fields, because the pipeline branches on one and a human reads the other.
+// The SDK coerces the reviewer's answer to this shape and retries on its own if
+// the model misses, so nothing here parses free text.
+const REVIEW_SCHEMA = {
+  type: 'object',
+  properties: {
+    verdict: { type: 'string', enum: ['plan', 'implementation'] },
+    reasoning: { type: 'string' }
+  },
+  required: ['verdict', 'reasoning'],
+  additionalProperties: false
+}
+
+function reviewPrompt(chunk, task, gateRun, root) {
+  const failing = gateRun.results
+    .filter((r) => r.status === 'failed' || r.status === 'skipped')
+    .map((r) => `$ ${r.cmd}\n${r.out}`)
+    .join('\n\n')
+
+  return [
+    'Every round on this task is spent and these gates are still not green. ' +
+      'Decide whether the plan is wrong or the implementation is.',
+    `The task, verbatim from ${chunk.stepsPath}:\n\n${task.body}`,
+    chunk.planPath && `Decisions for this chunk live in ${chunk.planPath}.`,
+    `Gates that are not green:\n\n${failing}`,
+    `Changes in the tree so far:\n\n${sh('git diff HEAD --stat', { cwd: root }).out}`
+  ]
+    .filter(Boolean)
+    .join('\n\n')
+}
+
 async function runTask({ root, chunk, task, agents, opts }) {
   let tddReport = null
 
@@ -84,8 +115,13 @@ async function runTask({ root, chunk, task, agents, opts }) {
 
   let gateRun = null
   let hint = null
+  // The reviewer may buy exactly one extra round, and only once per task. JS
+  // re-reads the loop condition each iteration, so raising `bonus` mid-loop is
+  // what grants that round.
+  let bonus = 0
+  let consulted = false
 
-  for (let round = 1; round <= opts.maxRounds; round++) {
+  for (let round = 1; round <= opts.maxRounds + bonus; round++) {
     step(`task ${task.number} · worker · round ${round}/${opts.maxRounds}`)
 
     const extra = [
@@ -136,8 +172,44 @@ async function runTask({ root, chunk, task, agents, opts }) {
     log(`   policy   ${next.action}${next.reason ? ` — ${next.reason}` : ''}`)
 
     if (next.action === 'accept') return { ok: true, rounds: round }
-    if (next.action === 'stop')
-      return { ok: false, stage: 'policy', detail: next.reason }
+    if (next.action === 'stop') {
+      if (consulted) return { ok: false, stage: 'policy', detail: next.reason }
+
+      consulted = true
+      step(`task ${task.number} · reviewer`)
+
+      const review = await runAgent({
+        definition: agents.reviewer,
+        prompt: reviewPrompt(chunk, task, gateRun, root),
+        cwd: root,
+        allowedTools: READ_ONLY_TOOLS,
+        outputFormat: { type: 'json_schema', schema: REVIEW_SCHEMA },
+        dryRun: opts.dryRun,
+        onEvent: (e) => e.type === 'tool' && process.stdout.write('.')
+      })
+
+      const verdict = review.structured
+      log(
+        `\n   ${review.subtype ?? 'dry-run'} · ${verdict?.verdict ?? 'no verdict'}`
+      )
+
+      // No verdict means the reviewer itself did not finish. Fall back to the
+      // plain stop rather than inventing a diagnosis.
+      if (!review.ok || !verdict)
+        return { ok: false, stage: 'policy', detail: next.reason }
+
+      if (verdict.verdict === 'plan')
+        return {
+          ok: false,
+          stage: 'plan',
+          detail: verdict.reasoning,
+          issues: writeIssues(chunk, task, verdict.reasoning)
+        }
+
+      bonus = 1
+      hint = verdict.reasoning
+      continue
+    }
 
     hint = next.hint
   }
@@ -172,6 +244,7 @@ async function main() {
 
   const plan = loadPlan(planDir)
   const agents = {
+    reviewer: loadAgentDefinition(root, 'reviewer'),
     tdd: loadAgentDefinition(root, 'tdd'),
     worker: loadAgentDefinition(root, 'worker')
   }
@@ -219,6 +292,7 @@ async function main() {
 
       if (!r.ok) {
         log(`\nSTOPPED at ${chunk.name} task ${task.number} (${r.stage})`)
+        if (r.issues) log(`The reviewer blames the plan — see ${r.issues}`)
         log('Tree left as-is for you to inspect. Nothing was committed.')
         process.exitCode = 1
         return

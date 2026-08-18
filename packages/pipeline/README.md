@@ -19,6 +19,9 @@ for each task in steps.md:
     worker agent   ──┐
     gates            │ up to --max-rounds
     failed? ─────────┘
+    out of rounds? → reviewer agent
+        verdict plan           → issues.md, run stops for a human
+        verdict implementation → its reasoning becomes one bonus round
     passed? → tick the checkboxes → git commit
 --pr → git push && gh pr create
 ```
@@ -40,9 +43,14 @@ agents inherit through `settingSources`.
 
 ## Agents
 
-`.claude/agents/tdd.md` and `worker.md` are the source of truth. Their bodies
-are appended to the `claude_code` system preset; the frontmatter `model:` is
-honoured. Editing those files changes agent behaviour with no change here.
+`.claude/agents/tdd.md`, `worker.md` and `reviewer.md` are the source of
+truth. Their bodies are appended to the `claude_code` system preset; the
+frontmatter `model:` is honoured. Editing those files changes agent behaviour
+with no change here.
+
+The reviewer is the exception to the shared tool list: it runs with
+`READ_ONLY_TOOLS` and answers a JSON schema, so it can diagnose a stuck task
+but cannot touch the tree it is diagnosing.
 
 Agents run with `permissionMode: 'dontAsk'` — anything not pre-approved is
 denied rather than prompting, because nobody is watching.

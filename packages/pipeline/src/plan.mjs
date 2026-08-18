@@ -92,6 +92,20 @@ export function tickTask(chunk, task) {
   writeFileSync(chunk.stepsPath, lines.join('\n'))
 }
 
+// The reviewer's verdict lands next to the steps.md it is about, appended so a
+// re-run after a partial fix keeps the earlier finding. The pipeline never
+// commits it: the run stops here, so this is scratch for the human.
+export function writeIssues(chunk, task, text) {
+  const path = join(chunk.dir, 'issues.md')
+  const prior = existsSync(path)
+    ? `${readFileSync(path, 'utf8').trimEnd()}\n\n`
+    : ''
+  const entry = `## Task ${task.number} — ${task.title}\n\n${text}\n`
+
+  writeFileSync(path, `${prior}${entry}`)
+  return path
+}
+
 export function firstPending(plan) {
   for (const chunk of plan.chunks) {
     const task = chunk.tasks.find((t) => !t.done)

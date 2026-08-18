@@ -24,17 +24,32 @@ export function loadAgentDefinition(root, name) {
 // which arrive via settingSources.
 const TOOLS = ['Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob', 'TodoWrite']
 
+// A diagnostic agent must not be able to change the tree it is diagnosing, so
+// the guarantee is the tool list rather than a line in its prompt. No Bash
+// either — `echo >` is a write. Whatever it needs from git, the caller puts in
+// the prompt.
+export const READ_ONLY_TOOLS = ['Read', 'Grep', 'Glob']
+
 export async function runAgent({
   definition,
   prompt,
   cwd,
+  allowedTools = TOOLS,
+  outputFormat,
   maxTurns = 60,
   dryRun = false,
   onEvent = () => {}
 }) {
   if (dryRun) {
     onEvent({ type: 'dry-run', agent: definition.name })
-    return { ok: true, text: '(dry-run)', turns: 0, costUsd: 0, tools: [] }
+    return {
+      ok: true,
+      text: '(dry-run)',
+      structured: null,
+      turns: 0,
+      costUsd: 0,
+      tools: []
+    }
   }
 
   const tools = []
@@ -53,10 +68,13 @@ export async function runAgent({
         preset: 'claude_code',
         append: definition.body
       },
-      allowedTools: TOOLS,
+      allowedTools,
       permissionMode: 'dontAsk',
       model: definition.model,
-      maxTurns
+      maxTurns,
+      // Omitted rather than passed as undefined: only the reviewer wants a
+      // schema, and the SDK reads the key's presence.
+      ...(outputFormat ? { outputFormat } : {})
     }
   })
 
@@ -76,6 +94,10 @@ export async function runAgent({
   return {
     ok: result?.subtype === 'success' && !result.is_error,
     text: result?.result ?? text,
+    // Only populated when `outputFormat` was set. A schema violation never
+    // reaches here: the SDK retries, then fails the run with
+    // `error_max_structured_output_retries`, which `ok` already catches.
+    structured: result?.structured_output ?? null,
     turns: result?.num_turns ?? 0,
     costUsd: result?.total_cost_usd ?? 0,
     subtype: result?.subtype ?? 'unknown',
