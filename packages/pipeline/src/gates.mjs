@@ -28,6 +28,26 @@ function scripts(root, pkgPath) {
   }
 }
 
+// A gate reports one of four statuses, and this file is the only place that
+// says which of them block. 'skipped' does: a gate whose script does not exist
+// has proved nothing, so it counts as red until someone writes the script.
+// 'dry-run' does not, which is why a dry run always reaches `accept`.
+const BLOCKING = new Set(['failed', 'skipped'])
+
+export function isBlocking(result) {
+  return BLOCKING.has(result.status)
+}
+
+// The block of evidence handed to an agent when a round did not go green.
+// Both the worker's retry prompt and the reviewer's prompt want the same
+// shape, and both must agree with `isBlocking` about what counts as evidence.
+export function formatFailures(gateRun) {
+  return gateRun.results
+    .filter(isBlocking)
+    .map((r) => `$ ${r.cmd}\n${r.out}`)
+    .join('\n\n')
+}
+
 // Deterministic gates. Each runs only when its script actually exists, so a
 // half-bootstrapped repo reports "skipped" instead of a false red.
 //
@@ -65,5 +85,8 @@ export function runGates(gates, { cwd, dryRun }) {
     results.push({ ...gate, status: r.ok ? 'passed' : 'failed', out: r.out })
   }
 
-  return { results, ok: results.every((r) => r.status !== 'failed') }
+  // No aggregate `ok` here on purpose: whether a run is acceptable is
+  // `decideNext`'s answer, and a second one on this object would be a
+  // convenient way to disagree with it.
+  return { results }
 }

@@ -1,7 +1,7 @@
-const BLOCKING = new Set(['failed', 'skipped'])
+import { isBlocking } from './gates.mjs'
 
 export function decideNext({ gateRun, round, maxRounds }) {
-  const blocking = gateRun.results.filter((r) => BLOCKING.has(r.status))
+  const blocking = gateRun.results.filter(isBlocking)
 
   if (blocking.length === 0) return { action: 'accept' }
 
