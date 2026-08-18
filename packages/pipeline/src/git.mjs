@@ -24,11 +24,11 @@ export function assertBranch(cwd, { allowMain = false } = {}) {
   return branch
 }
 
-export function commitTask(cwd, task, { dryRun }) {
+export function commitTask(cwd, title, { dryRun }) {
   if (!dryRun && !isDirty(cwd))
     return { ok: true, skipped: true, out: 'nothing to commit' }
 
-  const subject = `feat: ${task.title}`
+  const subject = `feat: ${title}`
   const add = sh('git add -A', { cwd, dryRun })
   if (!add.ok) return { ok: false, out: add.out }
 

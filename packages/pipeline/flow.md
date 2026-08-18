@@ -52,21 +52,21 @@ unstyled is deterministic code.
 | Box                  | Code                              | Notes                                                                                                                                                             |
 | -------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Planner agent        | `.claude/skills/planner/SKILL.md` | Invokes `grilling` first; two gates of its own                                                                                                                    |
-| Plan approved        | `plan.mjs:70`                     | `approved` is just `steps.md` being non-empty — the planner's Gate 2                                                                                              |
-| Human creates branch | `git.mjs:19-27`                   | `assertBranch` refuses `main`/`master`; branch creation is deliberately manual                                                                                    |
-| Run plan             | `cli.mjs:157`                     | `run-plan <feature> [--dry-run] [--limit N] [--chunk NAME] [--max-rounds N] [--pr]`                                                                               |
-| Task pending         | `cli.mjs:203`, `cli.mjs:210`      | Outer loop over chunks, inner over tasks; `- [x]` tasks are skipped                                                                                               |
-| Task needs tdd       | `cli.mjs:74`                      | Driven by the `**Agent:**` line in `steps.md`, nothing else                                                                                                       |
+| Plan approved        | `plan.mjs:68`                     | `approved` is just `steps.md` being non-empty — the planner's Gate 2                                                                                              |
+| Human creates branch | `git.mjs:16-25`                   | `assertBranch` refuses `main`/`master`; branch creation is deliberately manual                                                                                    |
+| Run plan             | `cli.mjs:277`                     | `run-plan <feature> [--dry-run] [--limit N] [--chunk NAME] [--max-rounds N] [--pr]`                                                                               |
+| Task pending         | `plan.mjs:114`, `cli.mjs:320`      | `pendingTasks` walks the plan once, applying `--chunk` and the `approved` check; `cli` just consumes the pairs                                                                                               |
+| Task needs tdd       | `cli.mjs:148`                      | Driven by the `**Agent:**` line in `steps.md`, nothing else                                                                                                       |
 | TDD agent            | `.claude/agents/tdd.md`           | Writes only the failing test                                                                                                                                      |
 | Worker agent         | `.claude/agents/worker.md`        | Prompt carries the tdd report, the previous round's failing gate output, and the hint                                                                             |
-| Gates                | `gates.mjs:41-69`                 | `pnpm -F web test`, `pnpm -F web typecheck`, `pnpm lint`. All three run every round, no short-circuit. Re-resolved each round so a task can unfreeze its own gate |
-| Decide next          | `policy.mjs`                      | `skipped` blocks exactly like `failed`. `stop` only at `round >= maxRounds`                                                                                       |
-| Reviewer agent | `.claude/agents/reviewer.md`, `cli.mjs:176-207` | Runs once per task, guarded by `consulted`. Read-only by tool list (`READ_ONLY_TOOLS` in `agent.mjs`), not by prompt. Answers a two-field JSON schema, so nothing parses free text |
-| Stopped by policy | `cli.mjs:176` | The second `stop`, after the bonus round. Exit 1, tree as-is, nothing committed |
+| Gates                | `gates.mjs:57-92`                 | `pnpm -F web test`, `pnpm -F web typecheck`, `pnpm lint`. All three run every round, no short-circuit. Re-resolved each round so a task can unfreeze its own gate |
+| Decide next          | `policy.mjs`                      | `skipped` blocks exactly like `failed` — via `isBlocking` in `gates.mjs`, which owns the status vocabulary. `stop` only at `round >= maxRounds`                                                                                       |
+| Reviewer agent | `.claude/agents/reviewer.md`, `cli.mjs:106-135` | Runs once per task, guarded by `consulted`. Read-only by tool list (`READ_ONLY_TOOLS` in `agent.mjs`), not by prompt. Answers a two-field JSON schema, so nothing parses free text |
+| Stopped by policy | `cli.mjs:226` | The second `stop`, after the bonus round. Exit 1, tree as-is, nothing committed |
 | Write issues md | `plan.mjs:98` | Appended next to the chunk's own `steps.md`. The pipeline never commits it — the run stops, so it is scratch for the human |
-| Stopped for human | `cli.mjs:204` | `stage: 'plan'`. The reviewer says no implementation can satisfy the task as written |
-| Tick and commit      | `cli.mjs:227-228`                 | `tickTask` rewrites `steps.md`, then `git add -A` + commit per task                                                                                               |
-| Push and open PR     | `cli.mjs:235`, `git.mjs:41`       | Once at the end, only with `--pr`                                                                                                                                 |
+| Stopped for human | `cli.mjs:244` | `stage: 'plan'`. The reviewer says no implementation can satisfy the task as written |
+| Tick and commit      | `cli.mjs:337-338`                 | `tickTask` rewrites `steps.md`, then `git add -A` + commit per task                                                                                               |
+| Push and open PR     | `cli.mjs:346`, `git.mjs:38`       | Once at the end, only with `--pr`                                                                                                                                 |
 
 ## Deliberately not in the diagram
 
@@ -76,15 +76,15 @@ unstyled is deterministic code.
 - **Agent session failures.** Every `runAgent` call can end
   `error_max_turns` / `error_during_execution` / `error_max_budget_usd`. That is
   a cross-cutting code concern, not a stage — and the two agents already differ:
-  `cli.mjs:81` halts the run when the tdd session fails, while `green.ok` is
+  `cli.mjs:160` halts the run when the tdd session fails, while `workerRun.ok` is
   never checked at all, because a crashed worker simply fails the gates and the
   round loop retries. Keep it out of the graph.
 - **Any check that the test is actually red.** Gates run only after the worker
-  (`cli.mjs:120`), so nothing verifies the tdd agent's output. A test that
+  (`cli.mjs:195`), so nothing verifies the tdd agent's output. A test that
   passes vacuously leaves the worker nothing to fix, the gates go green, and
   the task ticks done. Same blind spot `planner/SKILL.md` §5 warns about, one
   stage earlier.
-- **`retried N rounds without accept or stop`** (`cli.mjs:145-149`) is
+- **`retried N rounds without accept or stop`** (`cli.mjs:253-257`) is
   unreachable: on the last round `decideNext` always returns `accept` or
   `stop`. It is a guard, not a path.
 

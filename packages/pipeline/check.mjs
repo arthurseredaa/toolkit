@@ -104,6 +104,10 @@ assert(plain.tasks[0].done === false, 'an unticked box is not done')
 //
 // `parse(steps)` returns the chunk — { approved, tasks: [{ number, title,
 // agents, boxes, done }] } — and `assert(ok, label)` records the result.
+//
+// `pendingTasks(plan, { chunk })` is now the only walk of the plan, and it has
+// no coverage at all. It takes `{ chunks: [...] }` and returns
+// `{ tasks: [{ chunk, task }], blockedBy }`. Assert what it selects.
 
 // ── dry run ─────────────────────────────────────────────────────────────
 section('dry run')
