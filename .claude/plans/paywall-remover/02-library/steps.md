@@ -123,7 +123,7 @@ export function clearAll(): Promise<void> {
 }
 ```
 
-- [ ] `db.ts` exists, round-trip / overwrite / delete / clear / empty / clone-failure cases asserted, tests green
+- [x] `db.ts` exists, round-trip / overwrite / delete / clear / empty / clone-failure cases asserted, tests green
 
 ---
 
