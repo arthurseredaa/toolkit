@@ -611,7 +611,7 @@ export async function findSnapshot(
 }
 ```
 
-- [ ] `archive.ts` exists, availability / absent / error and URL-rewrite cases asserted, tests green
+- [x] `archive.ts` exists, availability / absent / error and URL-rewrite cases asserted, tests green
 
 ---
 
