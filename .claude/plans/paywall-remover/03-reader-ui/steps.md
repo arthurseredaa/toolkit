@@ -311,7 +311,7 @@ export function Reader({ slug }: { slug: string }) {
 }
 ```
 
-- [ ] `[id]` route exists, known / loading / unknown / malformed slug cases asserted, tests green
+- [x] `[id]` route exists, known / loading / unknown / malformed slug cases asserted, tests green
 
 ---
 
