@@ -235,4 +235,4 @@ export function articleStore(): ArticleStore {
 }
 ```
 
-- [ ] `store.ts` exists, all listed store cases asserted including reference stability, tests green
+- [x] `store.ts` exists, all listed store cases asserted including reference stability, tests green
