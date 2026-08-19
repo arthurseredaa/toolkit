@@ -167,7 +167,7 @@ export function ArticleBody({ article }: { article: Article }) {
 }
 ```
 
-- [ ] `ids.ts` and `article-body.tsx` exist, codec / grouping / header / badge cases asserted, tests green
+- [x] `ids.ts` and `article-body.tsx` exist, codec / grouping / header / badge cases asserted, tests green
 
 ---
 
