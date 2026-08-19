@@ -17,8 +17,10 @@ describe('ToolGrid', () => {
       screen.getByRole('link', { name: /compress/i }).getAttribute('href')
     ).toBe('/compress')
     expect(
-      screen.getByRole('link', { name: /analytics/i }).getAttribute('href')
-    ).toBe('/analytics')
+      screen
+        .getByRole('link', { name: /paywall remover/i })
+        .getAttribute('href')
+    ).toBe('/paywall-remover')
   })
 
   it('shows the name, description and stat for a tool', () => {
