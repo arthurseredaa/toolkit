@@ -708,7 +708,7 @@ export async function raceRoutes(
 }
 ```
 
-- [ ] `race.ts` exists, all seven listed race cases asserted, tests green
+- [x] `race.ts` exists, all seven listed race cases asserted, tests green
 
 ---
 
