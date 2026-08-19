@@ -861,5 +861,5 @@ export async function POST(request: Request) {
 }
 ```
 
-- [ ] `pipeline.ts` and `route.ts` exist, all listed request cases asserted, tests green
-- [ ] `pnpm -F web build` succeeds and lists `/api/paywall-remover`
+- [x] `pipeline.ts` and `route.ts` exist, all listed request cases asserted, tests green
+- [x] `pnpm -F web build` succeeds and lists `/api/paywall-remover`
