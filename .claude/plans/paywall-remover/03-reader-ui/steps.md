@@ -215,7 +215,7 @@ export function useArticles() {
 }
 ```
 
-- [ ] `use-articles.ts` exists, loading → ready, live update and unmount cases asserted, tests green
+- [x] `use-articles.ts` exists, loading → ready, live update and unmount cases asserted, tests green
 
 ---
 
