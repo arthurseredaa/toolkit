@@ -653,5 +653,5 @@ In `tools.ts`, change only the `paywall-remover` entry:
   }
 ```
 
-- [ ] `article-count.tsx` exists, grid and tools edited, hydration / pluralisation / other-cards cases asserted, tests green
-- [ ] `pnpm -F web build` succeeds and lists `/paywall-remover` and `/paywall-remover/[id]`
+- [x] `article-count.tsx` exists, grid and tools edited, hydration / pluralisation / other-cards cases asserted, tests green
+- [x] `pnpm -F web build` succeeds and lists `/paywall-remover` and `/paywall-remover/[id]`

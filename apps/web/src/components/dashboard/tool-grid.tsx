@@ -10,6 +10,7 @@ import {
   CardTitle
 } from '@/components/ui/card'
 
+import { ArticleCount } from './article-count'
 import type { Tool } from './tools'
 
 const container = {
@@ -48,7 +49,7 @@ export function ToolGrid({ tools }: { tools: Tool[] }) {
                 <CardDescription>{tool.description}</CardDescription>
               </CardHeader>
               <div className="px-(--card-spacing) font-mono text-xs text-muted-foreground">
-                {tool.stat}
+                {tool.slug === 'paywall-remover' ? <ArticleCount /> : tool.stat}
               </div>
             </Card>
           </Link>
