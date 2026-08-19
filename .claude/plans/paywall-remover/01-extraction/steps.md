@@ -209,7 +209,7 @@ export async function assertPublicUrl(input: string | URL): Promise<URL> {
 }
 ```
 
-- [ ] `ssrf.ts` exists, every listed address case asserted, tests green
+- [x] `ssrf.ts` exists, every listed address case asserted, tests green
 
 ---
 
