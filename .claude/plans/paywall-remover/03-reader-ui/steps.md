@@ -414,7 +414,7 @@ export function SavedList({
 }
 ```
 
-- [ ] `saved-list.tsx` exists, ordering / links / **clicked delete** / three status states asserted, tests green
+- [x] `saved-list.tsx` exists, ordering / links / **clicked delete** / three status states asserted, tests green
 
 ---
 
