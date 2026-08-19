@@ -588,7 +588,7 @@ export function Library() {
 }
 ```
 
-- [ ] `page.tsx` and `library.tsx` exist, submit / save-before-navigate / failure / **clicked retry** cases asserted, tests green
+- [x] `page.tsx` and `library.tsx` exist, submit / save-before-navigate / failure / **clicked retry** cases asserted, tests green
 
 ---
 
