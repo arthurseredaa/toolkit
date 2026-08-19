@@ -431,7 +431,7 @@ export function assess(
 }
 ```
 
-- [ ] `completeness.ts` exists, declaration and floor cases asserted, tests green
+- [x] `completeness.ts` exists, declaration and floor cases asserted, tests green
 
 ---
 
