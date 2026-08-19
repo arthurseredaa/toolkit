@@ -540,7 +540,7 @@ export function parseArticle(html: string, pageUrl: string): Parsed | null {
 }
 ```
 
-- [ ] `extract.ts` exists, block order / nesting / metadata / declaration cases asserted, tests green
+- [x] `extract.ts` exists, block order / nesting / metadata / declaration cases asserted, tests green
 
 ---
 
