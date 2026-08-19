@@ -329,7 +329,7 @@ export async function fetchPage(
 }
 ```
 
-- [ ] `fetch-page.ts` exists, redirect / status / content-type / cap / challenge cases asserted, tests green
+- [x] `fetch-page.ts` exists, redirect / status / content-type / cap / challenge cases asserted, tests green
 
 ---
 
