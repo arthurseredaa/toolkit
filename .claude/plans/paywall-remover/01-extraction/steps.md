@@ -121,7 +121,7 @@ export function canonicalKey(doc: Document, pageUrl: string): string {
 }
 ```
 
-- [ ] `types.ts` and `normalize.ts` exist, tests green
+- [x] `types.ts` and `normalize.ts` exist, tests green
 
 ---
 
