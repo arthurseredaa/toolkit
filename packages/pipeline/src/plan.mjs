@@ -92,10 +92,34 @@ export function tickTask(chunk, task) {
   writeFileSync(chunk.stepsPath, lines.join('\n'))
 }
 
-export function firstPending(plan) {
+// The reviewer's verdict lands next to the steps.md it is about, appended so a
+// re-run after a partial fix keeps the earlier finding. The pipeline never
+// commits it: the run stops here, so this is scratch for the human.
+export function writeIssues(chunk, task, text) {
+  const path = join(chunk.dir, 'issues.md')
+  const prior = existsSync(path)
+    ? `${readFileSync(path, 'utf8').trimEnd()}\n\n`
+    : ''
+  const entry = `## Task ${task.number} — ${task.title}\n\n${text}\n`
+
+  writeFileSync(path, `${prior}${entry}`)
+  return path
+}
+
+// One walk of the plan, applying the same two filters the runner applies:
+// `--chunk` narrows to a single chunk, and an unapproved chunk halts the walk
+// rather than being skipped past — the tasks behind it are not safe to run out
+// of order. `blockedBy` is that chunk, so the caller can say why the list is
+// short instead of guessing.
+export function pendingTasks(plan, { chunk: only } = {}) {
+  const tasks = []
+
   for (const chunk of plan.chunks) {
-    const task = chunk.tasks.find((t) => !t.done)
-    if (task) return { chunk, task }
+    if (only && chunk.name !== only) continue
+    if (!chunk.approved) return { tasks, blockedBy: chunk }
+
+    for (const task of chunk.tasks) if (!task.done) tasks.push({ chunk, task })
   }
-  return null
+
+  return { tasks, blockedBy: null }
 }

@@ -49,31 +49,35 @@ beforeEach(() => {
   globalThis.indexedDB = new IDBFactory()
 })
 
+// Assertions are derived from `tools`, not copied out of it. The grid's
+// contract is "one link per entry, each pointing at its own slug" — pinning
+// a particular tool tests the data instead, and breaks the whole suite the
+// next time the dashboard line-up changes.
 describe('ToolGrid', () => {
   it('renders one link per tool', async () => {
     await renderGrid()
-    expect(screen.getAllByRole('link')).toHaveLength(5)
+    expect(screen.getAllByRole('link')).toHaveLength(tools.length)
   })
 
-  it('links each tool to its own route', async () => {
+  it('links each tool to its own route, in order', async () => {
     await renderGrid()
     expect(
-      screen.getByRole('link', { name: /compress/i }).getAttribute('href')
-    ).toBe('/compress')
-    expect(paywallCard().getAttribute('href')).toBe('/paywall-remover')
+      screen.getAllByRole('link').map((a) => a.getAttribute('href'))
+    ).toEqual(tools.map((t) => `/${t.slug}`))
   })
 
   it('shows the name, description and stat for a tool', async () => {
+    const tool = tools[0]
     await renderGrid()
-    expect(screen.getByText('Vinted')).toBeDefined()
-    expect(screen.getByText('Listings and profit')).toBeDefined()
-    expect(screen.getByText('38 active')).toBeDefined()
+    expect(screen.getByText(tool.name)).toBeDefined()
+    expect(screen.getByText(tool.description)).toBeDefined()
+    expect(screen.getByText(tool.stat)).toBeDefined()
   })
 
   it('still renders every tool when reduced motion is preferred', async () => {
     setMatchMedia(true)
     await renderGrid()
-    expect(screen.getAllByRole('link')).toHaveLength(5)
+    expect(screen.getAllByRole('link')).toHaveLength(tools.length)
   })
 
   it('takes every other stat from the list and shows no count until the store has loaded', async () => {
