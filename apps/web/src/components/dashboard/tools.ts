@@ -33,7 +33,7 @@ export const tools: Tool[] = [
   {
     slug: 'paywall-remover',
     name: 'Paywall Remover',
-    description: 'Read without paywalls',
-    stat: '0 articles'
+    description: 'Archive links, kept locally',
+    stat: ''
   }
 ]

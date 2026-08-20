@@ -21,7 +21,7 @@ export function setMatchMedia(prefersReducedMotion: boolean) {
 }
 
 beforeEach(() => {
-  setMatchMedia(false)
+  if (typeof window !== 'undefined') setMatchMedia(false)
 })
 
 afterEach(() => {
