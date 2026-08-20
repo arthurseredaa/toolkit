@@ -3,8 +3,9 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { archiveTodayUrl } from '@/lib/paywall-remover/archive'
 import { encodeId } from '@/lib/paywall-remover/ids'
 import type { ExtractResult, FailureReason } from '@/lib/paywall-remover/types'
 import { useArticles } from '@/lib/paywall-remover/use-articles'
@@ -14,8 +15,8 @@ import { SavedList } from './saved-list'
 const MESSAGES: Record<FailureReason, string> = {
   'invalid-url': 'That is not a URL this tool can open.',
   blocked: 'The site blocked the request before the article loaded.',
-  paywalled: 'Only a preview was published, and no archived copy exists yet.',
-  'no-snapshot': 'No archived copy of this page exists yet.',
+  paywalled: 'Only a preview is public, and Wayback has no fuller copy.',
+  'no-snapshot': 'Wayback has no copy of this page.',
   timeout: 'Neither the publisher nor the archive answered in time.'
 }
 
@@ -94,7 +95,17 @@ export function Library() {
       {failure && (
         <div className="mt-4 rounded-lg border border-border p-3">
           <p className="text-sm">{MESSAGES[failure.reason]}</p>
-          <div className="mt-2 flex items-center gap-3">
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            {failure.reason !== 'invalid-url' && (
+              <a
+                href={archiveTodayUrl(failure.url)}
+                target="_blank"
+                rel="noreferrer"
+                className={buttonVariants({ size: 'sm' })}
+              >
+                Read on archive.is ↗
+              </a>
+            )}
             <Button
               size="sm"
               variant="outline"

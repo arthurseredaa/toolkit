@@ -1,7 +1,12 @@
 /** @vitest-environment node */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { findSnapshot, rawSnapshotUrl, snapshotDate } from './archive'
+import {
+  archiveTodayUrl,
+  findSnapshot,
+  rawSnapshotUrl,
+  snapshotDate
+} from './archive'
 
 const fetchMock = vi.fn()
 
@@ -121,5 +126,11 @@ describe('snapshotDate', () => {
     expect(snapshotDate('')).toBeNull()
     expect(snapshotDate('2024')).toBeNull()
     expect(snapshotDate('not-a-timestamp')).toBeNull()
+  })
+
+  it('builds an archive.today link for the reader to open themselves', () => {
+    expect(archiveTodayUrl('https://example.com/a/b?x=1')).toBe(
+      'https://archive.is/newest/https://example.com/a/b?x=1'
+    )
   })
 })

@@ -152,4 +152,30 @@ describe('Library', () => {
     expect(store.all()).toEqual([])
     expect(push).not.toHaveBeenCalled()
   })
+
+  it('offers the archive.is snapshot when the routes only found a preview', async () => {
+    replyWith({ ok: false, reason: 'paywalled', url: TARGET })
+    const user = userEvent.setup()
+    await mountLibrary()
+
+    await submit(user, TARGET)
+    await screen.findByText(/only a preview is public/i)
+
+    const link = screen.getByRole('link', { name: /archive\.is/i })
+    expect(link.getAttribute('href')).toBe(
+      `https://archive.is/newest/${TARGET}`
+    )
+    expect(link.getAttribute('target')).toBe('_blank')
+  })
+
+  it('offers no archive.is snapshot for a URL that was never valid', async () => {
+    replyWith({ ok: false, reason: 'invalid-url', url: TARGET })
+    const user = userEvent.setup()
+    await mountLibrary()
+
+    await submit(user, TARGET)
+    await screen.findByText(/not a URL this tool can open/i)
+
+    expect(screen.queryByRole('link', { name: /archive\.is/i })).toBeNull()
+  })
 })

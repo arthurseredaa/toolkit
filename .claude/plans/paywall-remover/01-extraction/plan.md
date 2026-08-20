@@ -21,7 +21,7 @@ Rows marked ☆ were chosen by the planner, **not** confirmed by the user.
 
 | Decision | Chosen | Why |
 |---|---|---|
-| Archive source | **Wayback only** | archive.today sits behind Cloudflare and rejects datacenter IPs; scraping a challenge page from a serverless function is the same failure we report to the user |
+| Archive source | **Wayback only** for automated retrieval; archive.today is offered to the reader as a link | measured 2026-08-20: `archive.is`, `archive.today` and `archive.ph` all answer `429` + reCAPTCHA to curl **and** to Node `fetch`, from a residential IP. A real browser is served normally, so the link works where a server fetch cannot |
 | Parser | `@mozilla/readability` + `linkedom` | Readability returns title, byline, publishedTime, siteName in one call; linkedom cold-starts far faster than jsdom |
 | Blocks from the DOM, not HTML | Readability's `serializer` option is set to return the **element**, and the block walker reads that tree | the default serializer returns an HTML string, which would have to be re-parsed to build typed blocks. ☆ |
 | jsdom escape hatch | named, not shipped | if a real site parses badly, swap the import in `extract.ts` — one line, both hand back a `document`. A runtime fallback is impossible: "parsed worse" has no detectable signal |

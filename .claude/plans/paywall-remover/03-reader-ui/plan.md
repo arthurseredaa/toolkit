@@ -29,7 +29,8 @@ Rows marked ☆ were chosen by the planner, **not** confirmed by the user.
 | `[id]` data source | `store.all()`, never the network | re-opening offline is the point of the library |
 | Unknown `[id]` | "not in your library" plus a link back, not a 404 page | the id came from a record the user may have deleted on this device. Only shown once `status()` is `ready` — before that it would accuse the user of deleting an article that is still loading. ☆ |
 | Reader header | title, author, published date, badge naming the winning route, snapshot date when archive, link to the original | the badge is the only honest way to show archived text may be stale |
-| Failure UI | reason sentence, link to the original, **working** retry that re-runs both routes | a failed URL is not an article; nothing is stored |
+| Failure UI | reason sentence, **link to the archive.today snapshot**, link to the original, **working** retry | a failed URL is not an article; nothing is stored |
+| Reading beats rendering | when both routes fail, send the reader to `archive.is/newest/<url>` rather than to a dead end | **Confirmed with the user**: rendering the article in our own reader matters less than being able to read it at all. archive.today serves a real browser normally, so the link succeeds exactly where our server fetch cannot |
 | Delete | per record in the list, **working**, no confirm dialog | a JS `confirm()` blocks; re-extracting costs one request. ☆ |
 | Empty state | plain text, no button | the URL input is already on screen; a second call to action would be a control with nowhere to go. ☆ |
 | Dashboard count | client component reads the store, renders `N articles`; nothing rendered until `load()` resolves | the current `0 articles` is a hardcoded lie; a flash of `0` before hydration is a worse one. ☆ |
