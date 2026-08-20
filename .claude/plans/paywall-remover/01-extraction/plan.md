@@ -1,19 +1,18 @@
-# Extraction route
+# Describe route
 
-**Ships:** `POST /api/paywall-remover` takes a URL and returns either an article
-as typed text blocks or a named failure reason. No UI.
+**Ships:** `POST /api/paywall-remover` takes a URL and returns a record naming
+the page — title, author, date, site name. No body text, no UI.
 **Next:** `../02-library` — the IndexedDB store.
 
 ## Context
 
 First server-side code in `apps/web`. A browser cannot `fetch` a third-party
-article, so retrieval runs in a route handler; everything after it is client-side.
+page, so retrieval runs in a route handler; everything after it is client-side.
 
-Two routes race: **A** fetches the URL as an ordinary reader, **B** asks the
-Wayback availability API and fetches the snapshot. First *complete* result wins,
-A preferred on tie. The loser is aborted.
+The article itself is read at archive.today. This route exists only so a saved
+row carries a name a person recognizes instead of a raw URL.
 
-`@mozilla/readability@^0.6.0` and `linkedom@^0.18.13` are already installed.
+`linkedom@^0.18.13` is already installed.
 
 ## Decisions settled
 
@@ -21,18 +20,17 @@ Rows marked ☆ were chosen by the planner, **not** confirmed by the user.
 
 | Decision | Chosen | Why |
 |---|---|---|
-| Archive source | **Wayback only** for automated retrieval; archive.today is offered to the reader as a link | measured 2026-08-20: `archive.is`, `archive.today` and `archive.ph` all answer `429` + reCAPTCHA to curl **and** to Node `fetch`, from a residential IP. A real browser is served normally, so the link works where a server fetch cannot |
-| Parser | `@mozilla/readability` + `linkedom` | Readability returns title, byline, publishedTime, siteName in one call; linkedom cold-starts far faster than jsdom |
-| Blocks from the DOM, not HTML | Readability's `serializer` option is set to return the **element**, and the block walker reads that tree | the default serializer returns an HTML string, which would have to be re-parsed to build typed blocks. ☆ |
-| jsdom escape hatch | named, not shipped | if a real site parses badly, swap the import in `extract.ts` — one line, both hand back a `document`. A runtime fallback is impossible: "parsed worse" has no detectable signal |
-| Output shape | typed blocks `{ type, text }[]` | v1 is text-only by scope; nothing reaches `dangerouslySetInnerHTML`, so no sanitizer and no XSS surface — including for records replayed from IndexedDB years later |
-| Completeness | **three states**: complete / suspicious / paywalled | the publisher's `isAccessibleForFree` decides paywall status; length is consulted only where the publisher declared nothing, and only to decide whether to keep route B alive |
-| Suspicious floor | `article.length < 1500` chars | a soft-paywall preview is 2–4 paragraphs; a real article clears this. ☆ |
-| Deadlines | race 8s, per-fetch 6s, `maxDuration = 20` | cold start plus two external fetches must finish inside the function budget. ☆ |
-| `runtime` export | **omitted** | see Premises corrected |
+| Reading beats rendering | the tool opens `archive.is/newest/<url>` and never renders the article itself | **Confirmed with the user**: body extraction fails in too many ways, and the external copy is what gets read regardless. archive.today serves a real browser normally, so the link works exactly where a server fetch cannot |
+| What the page is read for | title, author, `datePublished`, site name. Never the body | a name is all a library row needs. Nothing else survives the request |
+| Parser | `linkedom` plus our own `metadata.ts` | Readability parses a body we no longer want, and was removed. og tags and JSON-LD are the whole surface, and both are short to read directly |
+| Metadata order | `og:` tags, then JSON-LD, then `<title>` | `<title>` usually carries a `\| Site` suffix; `og:title` is the name the publisher chose. ☆ |
+| Robustness | metadata survives what body extraction does not | a Cloudflare challenge page and a Medium preview both still carry `<title>` and `og:` tags |
+| Never fails | a page it cannot open still yields a record named from the URL slug | the archive link is built from the URL alone, so nothing about a failed fetch needs to reach the reader |
+| Failure reason | `invalid-url`, and nothing else | it is the only input the tool genuinely cannot act on |
 | Method | `POST`, JSON body | keeps a long user URL out of URLs, logs and any cache |
 | Record key | `rel=canonical` / `og:url`, else normalized URL | collapses amp, mobile and `utm_*` variants into one record |
-| Failure reasons | `invalid-url \| blocked \| paywalled \| no-snapshot \| timeout` | `blocked` (403 / challenge) must read differently from `paywalled`; nothing is stored on failure |
+| Deadlines | per-fetch 6s, `maxDuration = 20` | cold start plus one external fetch must finish inside the function budget. ☆ |
+| `runtime` export | **omitted** | see Premises corrected |
 
 ## Premises corrected
 
@@ -40,9 +38,10 @@ Rows marked ☆ were chosen by the planner, **not** confirmed by the user.
   default and the Edge Runtime is deprecated in 16.3.0
   (`apps/web/node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/02-route-segment-config/runtime.md`).
   The PRD's "explicit runtime" would add a line the docs tell you to remove.
-- Readability parses JSON-LD itself, but only for **metadata**. It never recovers
-  `articleBody` and never reads `isAccessibleForFree`, so the truncation detector
-  is ours regardless.
+- **archive.today is not behind Cloudflare.** Measured 2026-08-20: `archive.is`,
+  `archive.today` and `archive.ph` all answer `429` plus an nginx reCAPTCHA to
+  curl **and** to Node `fetch`, from a residential IP. It is never fetched from
+  the server for that reason, only linked.
 
 ## Traps
 
@@ -54,26 +53,27 @@ Rows marked ☆ were chosen by the planner, **not** confirmed by the user.
     ranges by resolved address, follow redirects manually with `redirect: 'manual'`
     and re-validate every hop, cap at 3. Skip any of it and this is an open proxy.
 ⚠ A 200 response is not a success
-  — Cloudflare returns 200 with a challenge page. Check for a challenge marker
-    before handing the HTML to Readability, or it "extracts" the interstitial.
+  — Cloudflare returns 200 with a challenge page. `isChallengePage` runs before
+    the HTML is parsed, or the interstitial's `<title>` becomes the record name.
 ⚠ Unbounded response body
   — cap at 5 MB while streaming and require an HTML content-type; a video URL
     otherwise fills the function's memory.
 ⚠ `vitest.config.mts` sets `environment: 'jsdom'` globally
-  — extractor and race tests need `@vitest-environment node` in a docblock, or
-    linkedom fights jsdom's globals.
+  — the route, metadata and pipeline tests need `@vitest-environment node` in a
+    docblock, or linkedom fights jsdom's globals.
 
 ## Out of scope
 
-- archive.today, and crawler `User-Agent` / `Referer` spoofing — deliberate
-- Images, embedded media, inline links inside article text
+- Fetching archive.today or Wayback from the server — deliberate, see above
+- Crawler `User-Agent` / `Referer` spoofing — deliberate
+- Any article text, images or embedded media
 - Any storage or UI — chunks 02 and 03
 
 ## Verification
 
 | Command | Green looks like |
 |---|---|
-| `pnpm -F web test` | tests under `src/lib/paywall-remover` cover URL normalization, the SSRF host check, the three-state detector, the race tiebreak, and block extraction |
+| `pnpm -F web test` | tests under `src/lib/paywall-remover` cover URL normalization, the SSRF host check, metadata precedence, the slug fallback, and the challenge-page path |
 | `pnpm -F web typecheck` | no output |
 | `pnpm lint` | `0 warnings and 0 errors` |
 | `pnpm -F web build` | `✓ Compiled successfully`, `/api/paywall-remover` listed |
