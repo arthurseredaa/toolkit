@@ -33,7 +33,7 @@ export const tools: Tool[] = [
   {
     slug: 'paywall-remover',
     name: 'Paywall Remover',
-    description: 'Reader with an offline library',
+    description: 'Archive links, kept locally',
     stat: ''
   }
 ]

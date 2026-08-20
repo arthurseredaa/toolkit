@@ -1,9 +1,7 @@
 'use client'
 
-import Link from 'next/link'
-
 import { Button } from '@/components/ui/button'
-import { encodeId } from '@/lib/paywall-remover/ids'
+import { archiveTodayUrl } from '@/lib/paywall-remover/link'
 import type { StoreStatus } from '@/lib/paywall-remover/store'
 import type { Article } from '@/lib/paywall-remover/types'
 
@@ -49,15 +47,17 @@ export function SavedList({
           key={article.id}
           className="flex items-center justify-between gap-4 py-3"
         >
-          <Link
-            href={`/paywall-remover/${encodeId(article.id)}`}
+          <a
+            href={archiveTodayUrl(article.url)}
+            target="_blank"
+            rel="noreferrer"
             className="min-w-0 flex-1"
           >
             <span className="block truncate text-sm">{article.title}</span>
             <span className="font-mono text-xs text-muted-foreground">
-              {source(article)}
+              {source(article)} ↗
             </span>
-          </Link>
+          </a>
           <Button
             size="xs"
             variant="ghost"

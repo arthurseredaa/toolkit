@@ -13,9 +13,6 @@ function article(overrides: Partial<Article> = {}): Article {
     author: 'A. Writer',
     publishedAt: '2024-01-15',
     siteName: 'Example',
-    route: 'publisher',
-    snapshotAt: null,
-    blocks: [{ type: 'p', text: 'The first paragraph.' }],
     savedAt: 1700000000000,
     ...overrides
   }
@@ -173,5 +170,23 @@ describe('all', () => {
 
     expect(store.all()).not.toBe(before)
     expect(store.all()).toBe(store.all())
+  })
+
+  it('keeps one record per url when the page comes back under its canonical id', async () => {
+    const store = createArticleStore()
+    await store.load()
+
+    await store.add(
+      article({
+        id: 'https://example.com/story',
+        savedAt: 1700000000000
+      })
+    )
+    await store.add(
+      article({ id: 'example.com/story', savedAt: 1700000001000 })
+    )
+
+    expect(store.all().map((saved) => saved.id)).toEqual(['example.com/story'])
+    await expect(readAll()).resolves.toHaveLength(1)
   })
 })

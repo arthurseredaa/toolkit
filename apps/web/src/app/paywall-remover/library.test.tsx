@@ -3,46 +3,35 @@ import { render, screen } from '@testing-library/react'
 import userEvent, { type UserEvent } from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { encodeId } from '@/lib/paywall-remover/ids'
-import type { Article, ExtractResult } from '@/lib/paywall-remover/types'
+import { archiveTodayUrl, titleFromUrl } from '@/lib/paywall-remover/link'
+import type { Article } from '@/lib/paywall-remover/types'
 
-const { push } = vi.hoisted(() => ({ push: vi.fn() }))
+const TARGET = 'https://example.com/2026/a-story-worth-keeping'
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push, replace: () => {}, refresh: () => {} })
-}))
-
-const TARGET = 'https://example.com/story'
-
-const extracted: Article = {
-  id: 'example.com/story',
+// The id differs from the url on purpose: a page that declares a canonical
+// comes back under a key the optimistic row could not have known.
+const described: Article = {
+  id: 'https://example.com/canonical/a-story',
   url: TARGET,
-  title: 'A story',
+  title: 'A Story Worth Keeping',
   author: 'A. Writer',
   publishedAt: '2024-01-15T09:30:00.000Z',
   siteName: 'Example',
-  route: 'publisher',
-  snapshotAt: null,
-  blocks: [{ type: 'p', text: 'The first paragraph.' }],
   savedAt: 1700000000000
 }
 
 const fetchMock = vi.fn()
+const openMock = vi.fn()
 
-// What the store held at the moment each navigation happened, so ordering is
-// an observation rather than an inference from the final state.
-const pushes: { path: string; ids: string[] }[] = []
+// Whether the tab is opened before anything is awaited is the whole point:
+// a tab opened after a fetch resolves is a popup, and browsers block it.
+const order: string[] = []
 
-function replyWith(result: ExtractResult) {
-  // A fresh Response per call: one Response body cannot be read twice, and the
-  // retry test reads it twice.
-  fetchMock.mockImplementation(async () => Response.json(result))
-}
-
-function requestedUrls(): string[] {
-  return fetchMock.mock.calls.map(
-    ([, init]) => JSON.parse(String(init.body)).url as string
-  )
+function replyWith(article: Article) {
+  fetchMock.mockImplementation(async () => {
+    order.push('fetch')
+    return Response.json({ ok: true, article })
+  })
 }
 
 // The form reads the module-level shared store, so without a fresh module
@@ -52,28 +41,35 @@ async function mountLibrary() {
   const { articleStore } = await import('@/lib/paywall-remover/store')
   const store = articleStore()
 
-  push.mockImplementation((path: string) => {
-    pushes.push({ path, ids: store.all().map((saved) => saved.id) })
-  })
-
   render(<Library />)
   await screen.findByText(/nothing saved yet/i)
 
   return { store }
 }
 
+function input(): HTMLInputElement {
+  return screen.getByRole('textbox', {
+    name: 'Article URL'
+  }) as HTMLInputElement
+}
+
 async function submit(user: UserEvent, url: string) {
-  await user.type(screen.getByRole('textbox', { name: 'Article URL' }), url)
+  await user.type(input(), url)
   await user.click(screen.getByRole('button', { name: 'Read' }))
 }
 
 beforeEach(() => {
   vi.resetModules()
   globalThis.indexedDB = new IDBFactory()
-  push.mockReset()
   fetchMock.mockReset()
-  pushes.length = 0
+  openMock.mockReset()
+  openMock.mockImplementation(() => {
+    order.push('open')
+    return null
+  })
+  order.length = 0
   vi.stubGlobal('fetch', fetchMock)
+  vi.stubGlobal('open', openMock)
 })
 
 afterEach(() => {
@@ -81,12 +77,27 @@ afterEach(() => {
 })
 
 describe('Library', () => {
-  it('posts the submitted URL to the extraction route', async () => {
-    replyWith({ ok: true, article: extracted })
+  it('opens the archive copy in a new tab before it asks the server anything', async () => {
+    replyWith(described)
     const user = userEvent.setup()
     await mountLibrary()
 
     await submit(user, TARGET)
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+    expect(order).toEqual(['open', 'fetch'])
+    expect(openMock.mock.calls[0].slice(0, 2)).toEqual([
+      archiveTodayUrl(TARGET),
+      '_blank'
+    ])
+  })
+
+  it('posts the normalized url to the describe route', async () => {
+    replyWith(described)
+    const user = userEvent.setup()
+    await mountLibrary()
+
+    await submit(user, `${TARGET}?utm_source=nl`)
 
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
     const [endpoint, init] = fetchMock.mock.calls[0]
@@ -95,87 +106,52 @@ describe('Library', () => {
     expect(JSON.parse(String(init.body))).toEqual({ url: TARGET })
   })
 
-  it('saves the extracted article before navigating to its reader route', async () => {
-    replyWith({ ok: true, article: extracted })
+  it('replaces the row read off the url with the one the server named', async () => {
+    replyWith(described)
     const user = userEvent.setup()
     const { store } = await mountLibrary()
 
     await submit(user, TARGET)
 
-    await vi.waitFor(() => expect(push).toHaveBeenCalledTimes(1))
-    expect(pushes).toEqual([
-      {
-        path: `/paywall-remover/${encodeId(extracted.id)}`,
-        ids: [extracted.id]
-      }
-    ])
-    expect(store.all().map((saved) => saved.id)).toEqual([extracted.id])
+    await vi.waitFor(() =>
+      expect(store.all().map((saved) => saved.title)).toEqual([described.title])
+    )
+    expect(store.all().map((saved) => saved.id)).toEqual([described.id])
   })
 
-  it('explains a blocked request and stores nothing', async () => {
-    replyWith({ ok: false, reason: 'blocked', url: TARGET })
-    const user = userEvent.setup()
-    const { store } = await mountLibrary()
-
-    await submit(user, TARGET)
-
-    expect(await screen.findByText(/blocked the request/i)).toBeDefined()
-    expect(store.all()).toEqual([])
-    expect(push).not.toHaveBeenCalled()
-    expect(
-      screen.getAllByRole('link').map((link) => link.getAttribute('href'))
-    ).toContain(TARGET)
-  })
-
-  it('re-issues the request for the same URL when Try again is clicked', async () => {
-    replyWith({ ok: false, reason: 'blocked', url: TARGET })
-    const user = userEvent.setup()
-    await mountLibrary()
-
-    await submit(user, TARGET)
-    await screen.findByText(/blocked the request/i)
-
-    await user.click(screen.getByRole('button', { name: 'Try again' }))
-
-    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
-    expect(requestedUrls()).toEqual([TARGET, TARGET])
-  })
-
-  it('reports that nothing answered in time when the request never resolves', async () => {
+  it('keeps the row named off the url when the request never lands', async () => {
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
     const user = userEvent.setup()
     const { store } = await mountLibrary()
 
     await submit(user, TARGET)
 
-    expect(await screen.findByText(/answered in time/i)).toBeDefined()
+    await vi.waitFor(() => expect(store.all()).toHaveLength(1))
+    expect(store.all()[0].title).toBe(titleFromUrl(TARGET))
+    expect(openMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('clears the input so the next url can be pasted straight in', async () => {
+    replyWith(described)
+    const user = userEvent.setup()
+    await mountLibrary()
+
+    await submit(user, TARGET)
+
+    expect(input().value).toBe('')
+  })
+
+  it('says the address is not one it can open, and neither saves nor opens', async () => {
+    const user = userEvent.setup()
+    const { store } = await mountLibrary()
+
+    await submit(user, 'not a url')
+
+    expect(
+      await screen.findByText(/not a URL this tool can open/i)
+    ).toBeDefined()
     expect(store.all()).toEqual([])
-    expect(push).not.toHaveBeenCalled()
-  })
-
-  it('offers the archive.is snapshot when the routes only found a preview', async () => {
-    replyWith({ ok: false, reason: 'paywalled', url: TARGET })
-    const user = userEvent.setup()
-    await mountLibrary()
-
-    await submit(user, TARGET)
-    await screen.findByText(/only a preview is public/i)
-
-    const link = screen.getByRole('link', { name: /archive\.is/i })
-    expect(link.getAttribute('href')).toBe(
-      `https://archive.is/newest/${TARGET}`
-    )
-    expect(link.getAttribute('target')).toBe('_blank')
-  })
-
-  it('offers no archive.is snapshot for a URL that was never valid', async () => {
-    replyWith({ ok: false, reason: 'invalid-url', url: TARGET })
-    const user = userEvent.setup()
-    await mountLibrary()
-
-    await submit(user, TARGET)
-    await screen.findByText(/not a URL this tool can open/i)
-
-    expect(screen.queryByRole('link', { name: /archive\.is/i })).toBeNull()
+    expect(openMock).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

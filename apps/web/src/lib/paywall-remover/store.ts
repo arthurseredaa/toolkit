@@ -48,9 +48,16 @@ export function createArticleStore(): ArticleStore {
 
     async add(article) {
       await put(article)
-      set(
-        newestFirst([...articles.filter((a) => a.id !== article.id), article])
-      )
+
+      // One record per url. A row saved from the url alone arrives back under
+      // a different id as soon as the page declares its canonical.
+      const superseded = (a: Article) =>
+        a.id === article.id || a.url === article.url
+
+      for (const stale of articles.filter(superseded))
+        if (stale.id !== article.id) await del(stale.id)
+
+      set(newestFirst([...articles.filter((a) => !superseded(a)), article]))
     },
 
     async remove(id) {

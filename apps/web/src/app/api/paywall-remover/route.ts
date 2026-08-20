@@ -1,6 +1,6 @@
 // No `runtime` export: nodejs is the default and edge is deprecated in 16.3.0.
 import { normalizeUrl } from '@/lib/paywall-remover/normalize'
-import { extractArticle } from '@/lib/paywall-remover/pipeline'
+import { describeUrl } from '@/lib/paywall-remover/pipeline'
 
 export const maxDuration = 20
 
@@ -25,5 +25,5 @@ export async function POST(request: Request) {
   const url = normalizeUrl(raw)
   if (!url) return invalid(raw)
 
-  return Response.json(await extractArticle(url))
+  return Response.json({ ok: true, article: await describeUrl(url) })
 }

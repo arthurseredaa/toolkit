@@ -5,7 +5,7 @@ import { Library } from './library'
 
 export const metadata: Metadata = {
   title: 'Paywall Remover',
-  description: 'Read an article and keep it in a local library.'
+  description: 'Open an article at archive.today and keep the link.'
 }
 
 export default function PaywallRemoverPage() {
@@ -21,8 +21,8 @@ export default function PaywallRemoverPage() {
         Paywall Remover
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Reads the publisher&apos;s own payload or a public archive, then keeps
-        the article in this browser.
+        Opens the article at archive.today and keeps the link in this browser,
+        named after the page it points at.
       </p>
       <Library />
     </main>

@@ -13,9 +13,6 @@ function article(overrides: Partial<Article> = {}): Article {
     author: 'A. Writer',
     publishedAt: '2024-01-15',
     siteName: 'Example',
-    route: 'publisher',
-    snapshotAt: null,
-    blocks: [{ type: 'p', text: 'The first paragraph.' }],
     savedAt: 1700000000000,
     ...overrides
   }

@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
-    "@mozilla/readability": "^0.6.0",
     "class-variance-authority": "^0.7.1",
     "client-zip": "2.5.0",
     "clsx": "^2.1.1",

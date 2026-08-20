@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { encodeId } from '@/lib/paywall-remover/ids'
+import { archiveTodayUrl } from '@/lib/paywall-remover/link'
 import type { Article } from '@/lib/paywall-remover/types'
 
 import { SavedList } from './saved-list'
@@ -14,9 +14,6 @@ const newer: Article = {
   author: null,
   publishedAt: null,
   siteName: 'Example',
-  route: 'publisher',
-  snapshotAt: null,
-  blocks: [],
   savedAt: 1700000002000
 }
 
@@ -27,9 +24,6 @@ const older: Article = {
   author: null,
   publishedAt: null,
   siteName: 'Other',
-  route: 'publisher',
-  snapshotAt: null,
-  blocks: [],
   savedAt: 1700000001000
 }
 
@@ -40,17 +34,17 @@ afterEach(() => {
 })
 
 describe('SavedList', () => {
-  it('lists every saved article newest first, each linking to its reader route', () => {
+  it('lists every saved article newest first, each opening at archive.today', () => {
     render(
       <SavedList articles={[newer, older]} status="ready" onDelete={noop} />
     )
 
     expect(
       screen.getAllByRole('link').map((link) => link.getAttribute('href'))
-    ).toEqual([
-      `/paywall-remover/${encodeId(newer.id)}`,
-      `/paywall-remover/${encodeId(older.id)}`
-    ])
+    ).toEqual([archiveTodayUrl(newer.url), archiveTodayUrl(older.url)])
+    expect(
+      screen.getAllByRole('link').map((link) => link.getAttribute('target'))
+    ).toEqual(['_blank', '_blank'])
     expect(screen.getByText('The newer story')).toBeDefined()
     expect(screen.getByText('The older story')).toBeDefined()
   })
